@@ -70,26 +70,26 @@ themes = [
     {
         'name': 'Motivational',
         'color_scheme': {
-            'header_fill': '#FF5733',
-            'header_text': '#ffffff',
-            'time_fill': '#C70039',
-            'time_text': '#ffffff',
-            'day_fill_1': '#FFC300',
-            'day_fill_2': '#FF5733',
-            'day_text': '#900C3F',
+            'header_fill': '#1abc9c',      # Turquoise
+            'header_text': 'white',
+            'time_fill': '#16a085',        # Dark Turquoise
+            'time_text': 'white',
+             'day_fill_1': '#ecf0f1',       # Light Grey
+             'day_fill_2': '#bdc3c7',       # Silver
+             'day_text': '#2c3e50'          # Midnight Blue
         },
         'background_image': background_images[0]['url']  # Image 1
     },
     {
         'name': 'Academic',
         'color_scheme': {
-            'header_fill': '#3498DB',
-            'header_text': '#ffffff',
-            'time_fill': '#2980B9',
-            'time_text': '#ffffff',
-            'day_fill_1': '#85C1E9',
-            'day_fill_2': '#2980B9',
-            'day_text': '#1A5276',
+          'header_fill': '#e74c3c',      # Alizarin
+          'header_text': 'white',
+          'time_fill': '#c0392b',        # Pomegranate
+          'time_text': 'white',
+          'day_fill_1': '#fdfefe',       # Snow
+          'day_fill_2': '#dfe6e9',       # Light Blue Grey
+          'day_text': '#2d3436'          # Dark Grey
         },
         'background_image': background_images[1]['url']  # Image 2
     },
