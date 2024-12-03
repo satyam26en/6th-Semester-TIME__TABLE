@@ -18,7 +18,7 @@ import requests
 st.set_page_config(
     page_title="🎓 Student Timetable Viewer",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 # Define all background images (excluding images 9 and 10)
@@ -173,16 +173,13 @@ themes = [
     },
 ]
 
-# Function to randomly select a theme
-def select_random_theme(themes_list):
-    return random.choice(themes_list)
-
-# Select a random theme
-selected_theme = select_random_theme(themes)
-
-# Extract color scheme and background image from the selected theme
-color_scheme = selected_theme['color_scheme']
-background_image = selected_theme['background_image']
+# Function to select theme based on user selection
+def select_theme():
+    st.sidebar.title("🎨 Theme Selection")
+    theme_names = [theme['name'] for theme in themes]
+    selected_theme_name = st.sidebar.selectbox("Choose a Theme", theme_names, index=random.randint(0, len(themes)-1))
+    selected_theme = next((theme for theme in themes if theme['name'] == selected_theme_name), themes[0])
+    return selected_theme
 
 # Function to calculate average brightness
 def calculate_average_brightness(image):
@@ -196,16 +193,10 @@ def calculate_average_brightness(image):
     avg_brightness = sum(pixels) / len(pixels)
     return avg_brightness
 
-# Function to add background and determine text color
-def add_background_and_set_text_color(selected_background):
-    # Download the selected background image
-    try:
-        response = requests.get(selected_background)
-        response.raise_for_status()
-        img = Image.open(BytesIO(response.content))
-    except Exception as e:
-        st.error(f"❌ Failed to load background image: {e}")
-        return "#FFFFFF"  # Default to white if image fails
+# Function to add background and set text color
+def add_background_and_set_text_color(img, selected_background_url):
+    if img is None:
+        return "#000000"  # Default to black
 
     # Calculate the average brightness
     avg_brightness = calculate_average_brightness(img)
@@ -218,7 +209,7 @@ def add_background_and_set_text_color(selected_background):
         f"""
         <style>
         .stApp {{
-            background-image: url("{selected_background}");
+            background-image: url("{selected_background_url}");
             background-attachment: fixed;
             background-size: cover;
             background-position: center;
@@ -231,31 +222,58 @@ def add_background_and_set_text_color(selected_background):
 
     return text_color
 
-# Set the background image and get text color
-text_color = add_background_and_set_text_color(background_image)
-
-# Function to load data from GitHub
+# Function to load background image with caching
 @st.cache_data
-def load_data(url):
+def get_background_image(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        img = Image.open(BytesIO(response.content))
+        return img
+    except Exception as e:
+        st.error(f"❌ Failed to load background image: {e}")
+        return None
+
+# Function to load data from GitHub with fallback
+@st.cache_data
+def load_data(url, fallback_path=None):
     try:
         df = pd.read_csv(url)
         return df
     except Exception as e:
-        st.error(f"❌ Error loading data from {url}: {e}")
+        st.warning(f"❌ Error loading data from {url}: {e}")
+        if fallback_path:
+            try:
+                df = pd.read_csv(fallback_path)
+                st.info("✅ Loaded data from fallback source.")
+                return df
+            except Exception as fe:
+                st.error(f"❌ Failed to load fallback data: {fe}")
         return None
+
+# Function to validate dataframe
+def validate_dataframe(df, expected_columns):
+    if not all(column in df.columns for column in expected_columns):
+        st.error("❌ Dataframe is missing expected columns.")
+        return False
+    return True
 
 # URLs of the CSV files (Ensure these URLs are correct and publicly accessible)
 section_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/section_list_6Th_semester%20-%20Sheet1.csv'
 elective_url = 'https://raw.githubusercontent.com/satyam26en/TIME_TABLE_KIIT/main/Professional_Elective%20-%20Sheet1.csv'
 core_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/6th_core%20-%20Sheet1.csv'
 
-# Load data
-section_df = load_data(section_url)
-elective_df = load_data(elective_url)
-core_df = load_data(core_url)
+# Load data with optional fallbacks
+section_df = load_data(section_url, fallback_path='data/section_list.csv')
+elective_df = load_data(elective_url, fallback_path='data/elective.csv')
+core_df = load_data(core_url, fallback_path='data/core.csv')
 
-# Check if data loaded successfully
-if section_df is None or elective_df is None or core_df is None:
+# Validate dataframes
+if not all([
+    section_df is not None and validate_dataframe(section_df, ['Roll No.', 'Core Section', 'Professional Elective 1', 'Professional Elective 2']),
+    elective_df is not None and validate_dataframe(elective_df, ['DAY', 'ROOM1', 'TIME1', 'SUBJECT1']),  # Update expected columns accordingly
+    core_df is not None and validate_dataframe(core_df, ['DAY', 'ROOM', 'TIME', 'SUBJECT'])  # Update expected columns accordingly
+]):
     st.stop()
 
 # Normalize the 'Roll No.' column to ensure consistency
@@ -277,18 +295,7 @@ day_mapping = {
 
 # Function to standardize time slot names
 def standardize_time_slot(time_slot):
-    time_slot_mapping = {
-        '8 TO 9': '8 TO 9',
-        '9 TO 10': '9 TO 10',
-        '10 TO 11': '10 TO 11',
-        '11 TO 12': '11 TO 12',
-        '12 TO 1': '12 TO 1',
-        '1 TO 2': '1 TO 2'
-        
-    }
-    # Remove extra spaces in the time slot string to match the mapping
-    standardized_slot = ' '.join(time_slot.upper().split())
-    return time_slot_mapping.get(standardized_slot, time_slot)
+    return time_slot.strip().upper()
 
 # Function to generate the timetable dataframe
 def generate_timetable_df(roll_number):
@@ -316,19 +323,18 @@ def generate_timetable_df(roll_number):
     def fill_timetable(timetable_df):
         room_columns = [col for col in timetable_df.columns if 'ROOM' in col]
         for index, row in timetable_df.iterrows():
-            day = day_mapping.get(row['DAY'], 'Unknown')
+            day_abbr = row.get('DAY', '').upper()
+            day = day_mapping.get(day_abbr, 'Unknown')
             if day == 'Unknown':
                 continue  # Skip if day is not in the mapping
             for col in room_columns:
                 if row[col] != '---':
-                    time_col_index = timetable_df.columns.get_loc(col) + 1
-                    if time_col_index >= len(timetable_df.columns):
-                        continue  # Prevent index out of range
-                    time_col = timetable_df.columns[time_col_index]
-                    time_slot = standardize_time_slot(time_col)
-                    subject = row.get(time_col, 'N/A')
+                    # Assuming the time slot is in the corresponding TIME column
+                    time_col = col.replace('ROOM', 'TIME')
+                    time_slot = standardize_time_slot(row.get(time_col, ''))
+                    subject = row.get(col.replace('ROOM', 'SUBJECT'), 'N/A')
                     room_number = row[col]
-                    if isinstance(subject, str) and subject.lower() != 'x':  # Only include if it's not 'x'
+                    if isinstance(subject, str) and subject.lower() != 'x' and time_slot in times:
                         # Append to existing entry if there's a conflict
                         existing_entry = timetable_matrix.at[time_slot, day]
                         # Wrap subject in <b> tags for bold text
@@ -352,7 +358,7 @@ def generate_timetable_df(roll_number):
     return timetable_matrix
 
 # Function to visualize the timetable using Plotly with selected color schemes
-def visualize_timetable(timetable_matrix):
+def visualize_timetable(timetable_matrix, color_scheme):
     if timetable_matrix is None:
         return None
 
@@ -361,9 +367,9 @@ def visualize_timetable(timetable_matrix):
 
     # Create the table
     fig = go.Figure(data=[go.Table(
-        columnwidth = [100] + [120]*6,
+        # Removed fixed columnwidth to allow automatic adjustment
         header=dict(
-            values=['<b>TIME</b>'] + [f'<b>{day.upper()}</b>' for day in days],  # Days in uppercase
+            values=['<b>TIME</b>'] + [f'<b>{day.upper()}</b>' for day in days],
             fill_color=color_scheme['header_fill'],
             align='center',
             font=dict(color=color_scheme['header_text'], size=14, family='Arial Black'),
@@ -373,7 +379,7 @@ def visualize_timetable(timetable_matrix):
             values=[bold_time_slots] + [timetable_matrix[day].tolist() for day in days],
             fill=dict(
                 color=[
-                    [color_scheme['time_fill']] * len(times),  # Time column with selected fill color
+                    [color_scheme['time_fill']] * len(times),  # Time column
                     *[
                         [color_scheme['day_fill_1']] * len(times) if i % 2 == 0 else [color_scheme['day_fill_2']] * len(times)
                         for i in range(len(days))
@@ -387,7 +393,7 @@ def visualize_timetable(timetable_matrix):
                 ] + [
                     [color_scheme['day_text']] * len(times) for _ in days
                 ],
-                size=12,
+                size=10,  # Reduced font size for better fit on smaller screens
                 family='Arial'
             ),
             height=40,
@@ -405,7 +411,7 @@ def visualize_timetable(timetable_matrix):
             font=dict(size=24, family='Arial Black', color='teal')
         ),
         margin=dict(l=20, r=20, t=60, b=20),
-        height=700,
+        # Removed fixed height to allow automatic sizing
         paper_bgcolor='rgba(0,0,0,0)',  # Transparent paper background
         plot_bgcolor='rgba(0,0,0,0)',   # Transparent plot background
         font=dict(family='Arial')
@@ -438,11 +444,51 @@ def create_download_button(img_bytes, filename='timetable.jpg'):
         key='download-button'
     )
 
-# Function to set background image and determine text color
-text_color = add_background_and_set_text_color(background_image)
-
 # Main Streamlit App
 def main():
+    # Select theme
+    selected_theme = select_theme()
+    color_scheme = selected_theme['color_scheme']
+    background_image_url = selected_theme['background_image']
+
+    # Load and set background
+    img = get_background_image(background_image_url)
+    if img:
+        text_color = add_background_and_set_text_color(img, background_image_url)
+    else:
+        text_color = "#000000"  # Fallback color
+
+    # Inject CSS for responsiveness
+    st.markdown(
+        """
+        <style>
+        /* Make Plotly charts responsive */
+        .plotly-container {
+            width: 100% !important;
+            height: auto !important;
+        }
+
+        /* Enable horizontal scrolling for tables on small screens */
+        @media only screen and (max-width: 600px) {
+            .plotly {
+                overflow-x: auto;
+            }
+            .plotly .main-svg {
+                font-size: 8px !important;  /* Reduce font size */
+            }
+        }
+
+        /* Adjust background image for smaller screens */
+        @media only screen and (max-width: 600px) {
+            .stApp {
+                background-size: contain;
+            }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     # Display the dynamic title with determined text color
     st.markdown(
         f"<h1 style='text-align: center; color: {text_color};'>🎓 Student Timetable Viewer</h1>",
@@ -464,15 +510,29 @@ def main():
     # Button to generate timetable
     if st.button("🔍 Generate Timetable"):
         if roll_number.strip():
-            timetable_df = generate_timetable_df(roll_number.strip())
-            if timetable_df is not None:
-                fig = visualize_timetable(timetable_df)
-                if fig:
-                    st.plotly_chart(fig, use_container_width=True)
-                    if download:
-                        img_bytes = save_timetable_as_image(fig)
-                        if img_bytes:
-                            create_download_button(img_bytes)
+            with st.spinner('Generating timetable...'):
+                timetable_df = generate_timetable_df(roll_number.strip())
+                if timetable_df is not None:
+                    fig = visualize_timetable(timetable_df, color_scheme)
+                    if fig:
+                        # Wrap the chart in a scrollable div for smaller screens
+                        st.markdown(
+                            """
+                            <div style="overflow-x: auto;">
+                            """,
+                            unsafe_allow_html=True
+                        )
+                        st.plotly_chart(fig, use_container_width=True)
+                        st.markdown(
+                            """
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+                        if download:
+                            img_bytes = save_timetable_as_image(fig)
+                            if img_bytes:
+                                create_download_button(img_bytes)
         else:
             st.error("❌ Please enter a valid roll number.")
 
@@ -486,3 +546,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
