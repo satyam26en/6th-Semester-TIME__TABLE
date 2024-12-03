@@ -225,6 +225,40 @@ def add_background_and_set_text_color(selected_background):
             background-position: center;
             background-repeat: no-repeat;
         }}
+        /* Responsive adjustments */
+        @media only screen and (max-width: 600px) {{
+            .stApp h1 {{
+                font-size: 24px !important;
+            }}
+            .stApp h3 {{
+                font-size: 18px !important;
+            }}
+            table {{
+                font-size: 10px !important;
+            }}
+        }}
+        @media only screen and (min-width: 601px) and (max-width: 1024px) {{
+            .stApp h1 {{
+                font-size: 28px !important;
+            }}
+            .stApp h3 {{
+                font-size: 20px !important;
+            }}
+            table {{
+                font-size: 12px !important;
+            }}
+        }}
+        @media only screen and (min-width: 1025px) {{
+            .stApp h1 {{
+                font-size: 32px !important;
+            }}
+            .stApp h3 {{
+                font-size: 22px !important;
+            }}
+            table {{
+                font-size: 14px !important;
+            }}
+        }}
         </style>
         """,
         unsafe_allow_html=True
@@ -401,6 +435,7 @@ def visualize_timetable(timetable_matrix, color_scheme):
 
     # Update layout for better responsiveness
     fig.update_layout(
+        autosize=True,
         title=dict(
             text='📅 Student Timetable',
             x=0.5,
@@ -408,7 +443,7 @@ def visualize_timetable(timetable_matrix, color_scheme):
             font=dict(size=24, family='Arial Black', color='teal')
         ),
         margin=dict(l=20, r=20, t=60, b=20),
-        height=700,
+        height=700,  # Consider adjusting or removing to let Plotly manage height
         paper_bgcolor='rgba(0,0,0,0)',  # Transparent paper background
         plot_bgcolor='rgba(0,0,0,0)',   # Transparent plot background
         font=dict(family='Arial')
@@ -469,6 +504,40 @@ def add_background_and_set_text_color(selected_background):
             background-position: center;
             background-repeat: no-repeat;
         }}
+        /* Responsive adjustments */
+        @media only screen and (max-width: 600px) {{
+            .stApp h1 {{
+                font-size: 24px !important;
+            }}
+            .stApp h3 {{
+                font-size: 18px !important;
+            }}
+            table {{
+                font-size: 10px !important;
+            }}
+        }}
+        @media only screen and (min-width: 601px) and (max-width: 1024px) {{
+            .stApp h1 {{
+                font-size: 28px !important;
+            }}
+            .stApp h3 {{
+                font-size: 20px !important;
+            }}
+            table {{
+                font-size: 12px !important;
+            }}
+        }}
+        @media only screen and (min-width: 1025px) {{
+            .stApp h1 {{
+                font-size: 32px !important;
+            }}
+            .stApp h3 {{
+                font-size: 22px !important;
+            }}
+            table {{
+                font-size: 14px !important;
+            }}
+        }}
         </style>
         """,
         unsafe_allow_html=True
@@ -506,7 +575,10 @@ def main():
             if timetable_df is not None:
                 fig = visualize_timetable(timetable_df, color_scheme)
                 if fig:
+                    # Wrap the chart in a div with scroll for small devices
+                    st.markdown('<div class="table-container">', unsafe_allow_html=True)
                     st.plotly_chart(fig, use_container_width=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
                     if download:
                         img_bytes = save_timetable_as_image(fig)
                         if img_bytes:
@@ -521,6 +593,18 @@ def main():
                 </style>
                 """
     st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+# Function to calculate average brightness
+def calculate_average_brightness(image):
+    # Convert image to grayscale
+    grayscale_image = image.convert("L")
+    # Resize image to reduce computation
+    grayscale_image = grayscale_image.resize((100, 100))
+    # Get pixel data
+    pixels = list(grayscale_image.getdata())
+    # Calculate average brightness
+    avg_brightness = sum(pixels) / len(pixels)
+    return avg_brightness
 
 if __name__ == "__main__":
     main()
