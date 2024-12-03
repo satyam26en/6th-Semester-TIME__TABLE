@@ -171,6 +171,46 @@ themes = [
         },
         'background_image': background_images[7]['url']  # Image 8
     },
+     {
+        'header_fill': '#8e44ad',      # Wisteria
+        'header_text': 'white',
+        'time_fill': '#732d91',        # Purple Heart
+        'time_text': 'white',
+        'day_fill_1': '#f5f6f4',       # Platinum
+        'day_fill_2': '#dcdde1',       # Light Grey
+        'day_text': '#2c3e50'          # Midnight Blue
+    },
+      'background_image': background_images[7]['url']  # Image 8
+    {
+        'header_fill': '#2980b9',      # Belize Hole
+        'header_text': 'white',
+        'time_fill': '#1f618d',        # Blue Dianne
+        'time_text': 'white',
+        'day_fill_1': '#f0f3f4',       # Platinum
+        'day_fill_2': '#dcdde1',       # Light Grey
+        'day_text': '#2c3e50'          # Midnight Blue
+    },
+       'background_image': background_images[6]['url']  # Image 7
+    {
+        'header_fill': '#27ae60',      # Green Sea
+        'header_text': 'white',
+        'time_fill': '#1e8449',        # Dark Green
+        'time_text': 'white',
+        'day_fill_1': '#f8f9fa',       # Ghost White
+        'day_fill_2': '#dfe6e9',       # Light Blue Grey
+        'day_text': '#2c3e50'          # Midnight Blue
+    },
+        'background_image': background_images[4]['url']
+    {
+        'header_fill': '#FFB6C1',      # Soft Pastel Pink (Aesthetic Theme)
+        'header_text': '#36454F',      # Charcoal
+        'time_fill': '#E6E6FA',        # Soft Lavender
+        'time_text': '#36454F',        # Charcoal
+        'day_fill_1': '#FFFFF0',       # Ivory
+        'day_fill_2': '#D3D3D3',       # Light Gray
+        'day_text': '#36454F'          # Charcoal
+    },
+    'background_image': background_images[2]['url']
 ]
 
 # Function to randomly select a theme
