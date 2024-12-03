@@ -19,7 +19,7 @@ except ImportError:
     st.stop()
 
 # Load the section, professional elective, and core section files from GitHub
-section_url = 'https://raw.githubusercontent.com/satyam26en/TIME_TABLE_KIIT/main/SECTION.csv'
+section_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/section_list_6Th_semester%20-%20Sheet1.csv'
 elective_url = 'https://raw.githubusercontent.com/satyam26en/TIME_TABLE_KIIT/main/Professional_Elective%20-%20Sheet1.csv'
 core_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/6th_core%20-%20Sheet1.csv'
 
