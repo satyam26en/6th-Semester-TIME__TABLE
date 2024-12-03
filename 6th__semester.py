@@ -214,7 +214,7 @@ def add_background_and_set_text_color(selected_background):
     # Determine text color based on brightness
     text_color = "#000000" if avg_brightness > 127 else "#FFFFFF"
 
-    # Inject custom CSS to set the background image
+    # Inject custom CSS to set the background image and adjust table-container
     st.markdown(
         f"""
         <style>
@@ -224,6 +224,12 @@ def add_background_and_set_text_color(selected_background):
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
+        }}
+        /* Table container with no padding or margin */
+        .table-container {{
+            overflow-x: auto;
+            padding: 0;
+            margin: 0;
         }}
         /* Responsive adjustments */
         @media only screen and (max-width: 600px) {{
@@ -398,7 +404,7 @@ def visualize_timetable(timetable_matrix, color_scheme):
 
     # Create the table
     fig = go.Figure(data=[go.Table(
-        columnwidth = [100] + [120]*6,
+        columnwidth=[100] + [120]*6,
         header=dict(
             values=['<b>TIME</b>'] + [f'<b>{day.upper()}</b>' for day in days],  # Days in uppercase
             fill_color=color_scheme['header_fill'],
@@ -443,7 +449,7 @@ def visualize_timetable(timetable_matrix, color_scheme):
             font=dict(size=24, family='Arial Black', color='teal')
         ),
         margin=dict(l=20, r=20, t=60, b=20),
-        height=700,  # Consider adjusting or removing to let Plotly manage height
+        height=700,  # You can adjust or remove this to let Plotly manage height
         paper_bgcolor='rgba(0,0,0,0)',  # Transparent paper background
         plot_bgcolor='rgba(0,0,0,0)',   # Transparent plot background
         font=dict(family='Arial')
@@ -493,7 +499,7 @@ def add_background_and_set_text_color(selected_background):
     # Determine text color based on brightness
     text_color = "#000000" if avg_brightness > 127 else "#FFFFFF"
 
-    # Inject custom CSS to set the background image
+    # Inject custom CSS to set the background image and adjust table-container
     st.markdown(
         f"""
         <style>
@@ -503,6 +509,1722 @@ def add_background_and_set_text_color(selected_background):
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
+        }}
+        /* Table container with no padding or margin */
+        .table-container {{
+            overflow-x: auto;
+            padding: 0;
+            margin: 0;
+        }}
+        /* Responsive adjustments */
+        @media only screen and (max-width: 600px) {{
+            .stApp h1 {{
+                font-size: 24px !important;
+            }}
+            .stApp h3 {{
+                font-size: 18px !important;
+            }}
+            table {{
+                font-size: 10px !important;
+            }}
+        }}
+        @media only screen and (min-width: 601px) and (max-width: 1024px) {{
+            .stApp h1 {{
+                font-size: 28px !important;
+            }}
+            .stApp h3 {{
+                font-size: 20px !important;
+            }}
+            table {{
+                font-size: 12px !important;
+            }}
+        }}
+        @media only screen and (min-width: 1025px) {{
+            .stApp h1 {{
+                font-size: 32px !important;
+            }}
+            .stApp h3 {{
+                font-size: 22px !important;
+            }}
+            table {{
+                font-size: 14px !important;
+            }}
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    return text_color
+
+# Set the background image and get text color
+text_color = add_background_and_set_text_color(background_image)
+
+# Function to load data from GitHub
+@st.cache_data
+def load_data(url):
+    try:
+        df = pd.read_csv(url)
+        return df
+    except Exception as e:
+        st.error(f"❌ Error loading data from {url}: {e}")
+        return None
+
+# URLs of the CSV files (Ensure these URLs are correct and publicly accessible)
+section_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/section_list_6Th_semester%20-%20Sheet1.csv'
+elective_url = 'https://raw.githubusercontent.com/satyam26en/TIME_TABLE_KIIT/main/Professional_Elective%20-%20Sheet1.csv'
+core_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/6th_core%20-%20Sheet1.csv'
+
+# Load data
+section_df = load_data(section_url)
+elective_df = load_data(elective_url)
+core_df = load_data(core_url)
+
+# Check if data loaded successfully
+if section_df is None or elective_df is None or core_df is None:
+    st.stop()
+
+# Normalize the 'Roll No.' column to ensure consistency
+section_df['Roll No.'] = section_df['Roll No.'].astype(str).str.strip()
+
+# Define the order of days and times
+days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+times = ['8 TO 9', '9 TO 10', '10 TO 11', '11 TO 12', '12 TO 1', '1 TO 2', '2 TO 3', '3 TO 4', '4 TO 5']
+
+# Define a mapping from abbreviated to full day names
+day_mapping = {
+    'MON': 'Monday',
+    'TUE': 'Tuesday',
+    'WED': 'Wednesday',
+    'THU': 'Thursday',
+    'FRI': 'Friday',
+    'SAT': 'Saturday'
+}
+
+# Function to standardize time slot names
+def standardize_time_slot(time_slot):
+    time_slot_mapping = {
+        '8 TO 9': '8 TO 9',
+        '9 TO 10': '9 TO 10',
+        '10 TO 11': '10 TO 11',
+        '11 TO 12': '11 TO 12',
+        '12 TO 1': '12 TO 1',
+        '1 TO 2': '1 TO 2',
+        '2 TO 3': '2 TO 3',
+        '3 TO 4': '3 TO 4',
+        '4 TO 5': '4 TO 5'
+    }
+    # Remove extra spaces in the time slot string to match the mapping
+    standardized_slot = ' '.join(time_slot.upper().split())
+    return time_slot_mapping.get(standardized_slot, time_slot)
+
+# Function to generate the timetable dataframe
+def generate_timetable_df(roll_number):
+    # Find the section details for the given roll number
+    student_section = section_df[section_df['Roll No.'] == roll_number]
+
+    if student_section.empty:
+        st.error("❌ Roll number not found. Please check and try again.")
+        return None
+
+    # Extract the core section and elective sections
+    core_section = student_section['Core Section'].values[0]
+    elective_1_section = student_section['Professional Elective 1'].values[0]
+    elective_2_section = student_section['Professional Elective 2'].values[0]
+
+    # Retrieve the weekly timetable for Professional Electives 1 and 2
+    elective_1_timetable = elective_df[elective_df['Section(DE)'] == elective_1_section]
+    elective_2_timetable = elective_df[elective_df['Section(DE)'] == elective_2_section]
+    core_timetable = core_df[core_df['Section'] == core_section]
+
+    # Initialize the timetable matrix
+    timetable_matrix = pd.DataFrame(index=times, columns=days, data='')
+
+    # Function to fill the timetable matrix with subject names and room numbers
+    def fill_timetable(timetable_df):
+        room_columns = [col for col in timetable_df.columns if 'ROOM' in col]
+        for index, row in timetable_df.iterrows():
+            day = day_mapping.get(row['DAY'], 'Unknown')
+            if day == 'Unknown':
+                continue  # Skip if day is not in the mapping
+            for col in room_columns:
+                if row[col] != '---':
+                    time_col_index = timetable_df.columns.get_loc(col) + 1
+                    if time_col_index >= len(timetable_df.columns):
+                        continue  # Prevent index out of range
+                    time_col = timetable_df.columns[time_col_index]
+                    time_slot = standardize_time_slot(time_col)
+                    subject = row.get(time_col, 'N/A')
+                    room_number = row[col]
+                    if isinstance(subject, str) and subject.lower() != 'x':  # Only include if it's not 'x'
+                        # Append to existing entry if there's a conflict
+                        existing_entry = timetable_matrix.at[time_slot, day]
+                        # Wrap subject in <b> tags for bold text
+                        new_entry = f"<b>{subject} ({room_number})</b>"
+                        if existing_entry:
+                            timetable_matrix.at[time_slot, day] = existing_entry + "<br>" + new_entry
+                        else:
+                            timetable_matrix.at[time_slot, day] = new_entry
+
+    # Fill the timetable matrix for core and elective timetables
+    fill_timetable(core_timetable)
+    fill_timetable(elective_1_timetable)
+    fill_timetable(elective_2_timetable)
+
+    # Replace NaN values with blank spaces
+    timetable_matrix = timetable_matrix.fillna('')
+
+    # Sort the table based on time slots
+    timetable_matrix = timetable_matrix.reindex(times)
+
+    return timetable_matrix
+
+# Function to visualize the timetable using Plotly with selected color schemes
+def visualize_timetable(timetable_matrix, color_scheme):
+    if timetable_matrix is None:
+        return None
+
+    # Create bold Time column by wrapping with <b> tags
+    bold_time_slots = [f"<b>{time}</b>" for time in timetable_matrix.index]
+
+    # Create the table
+    fig = go.Figure(data=[go.Table(
+        columnwidth=[100] + [120]*6,
+        header=dict(
+            values=['<b>TIME</b>'] + [f'<b>{day.upper()}</b>' for day in days],  # Days in uppercase
+            fill_color=color_scheme['header_fill'],
+            align='center',
+            font=dict(color=color_scheme['header_text'], size=14, family='Arial Black'),
+            height=50
+        ),
+        cells=dict(
+            values=[bold_time_slots] + [timetable_matrix[day].tolist() for day in days],
+            fill=dict(
+                color=[
+                    [color_scheme['time_fill']] * len(times),  # Time column with selected fill color
+                    *[
+                        [color_scheme['day_fill_1']] * len(times) if i % 2 == 0 else [color_scheme['day_fill_2']] * len(times)
+                        for i in range(len(days))
+                    ]
+                ]
+            ),
+            align='center',
+            font=dict(
+                color=[
+                    color_scheme['time_text']
+                ] + [
+                    [color_scheme['day_text']] * len(times) for _ in days
+                ],
+                size=12,
+                family='Arial'
+            ),
+            height=40,
+            line_color='rgba(0,0,0,0.1)',
+            line_width=1
+        )
+    )])
+
+    # Update layout for better responsiveness
+    fig.update_layout(
+        autosize=True,
+        title=dict(
+            text='📅 Student Timetable',
+            x=0.5,
+            xanchor='center',
+            font=dict(size=24, family='Arial Black', color='teal')
+        ),
+        margin=dict(l=20, r=20, t=60, b=20),
+        height=700,  # You can adjust or remove this to let Plotly manage height
+        paper_bgcolor='rgba(0,0,0,0)',  # Transparent paper background
+        plot_bgcolor='rgba(0,0,0,0)',   # Transparent plot background
+        font=dict(family='Arial')
+    )
+
+    return fig
+
+# Function to save the timetable as an image
+def save_timetable_as_image(fig, filename='timetable.jpg'):
+    if fig is None:
+        st.error("❌ No figure to save.")
+        return
+    try:
+        img_bytes = fig.to_image(format='jpg')
+        return img_bytes
+    except Exception as e:
+        st.error(f"❌ Error saving image: {e}")
+        return None
+
+# Function to display download button in Streamlit
+def create_download_button(img_bytes, filename='timetable.jpg'):
+    if not img_bytes:
+        st.error("❌ No image to download.")
+        return
+    st.download_button(
+        label="📥 Download Timetable as JPG",
+        data=img_bytes,
+        file_name=filename,
+        mime="image/jpg",
+        key='download-button'
+    )
+
+# Function to set background image and determine text color
+def add_background_and_set_text_color(selected_background):
+    # Download the selected background image
+    try:
+        response = requests.get(selected_background)
+        response.raise_for_status()
+        img = Image.open(BytesIO(response.content))
+    except Exception as e:
+        st.error(f"❌ Failed to load background image: {e}")
+        return "#FFFFFF"  # Default to white if image fails
+
+    # Calculate the average brightness
+    avg_brightness = calculate_average_brightness(img)
+
+    # Determine text color based on brightness
+    text_color = "#000000" if avg_brightness > 127 else "#FFFFFF"
+
+    # Inject custom CSS to set the background image and adjust table-container
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("{selected_background}");
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }}
+        /* Table container with no padding or margin */
+        .table-container {{
+            overflow-x: auto;
+            padding: 0;
+            margin: 0;
+        }}
+        /* Responsive adjustments */
+        @media only screen and (max-width: 600px) {{
+            .stApp h1 {{
+                font-size: 24px !important;
+            }}
+            .stApp h3 {{
+                font-size: 18px !important;
+            }}
+            table {{
+                font-size: 10px !important;
+            }}
+        }}
+        @media only screen and (min-width: 601px) and (max-width: 1024px) {{
+            .stApp h1 {{
+                font-size: 28px !important;
+            }}
+            .stApp h3 {{
+                font-size: 20px !important;
+            }}
+            table {{
+                font-size: 12px !important;
+            }}
+        }}
+        @media only screen and (min-width: 1025px) {{
+            .stApp h1 {{
+                font-size: 32px !important;
+            }}
+            .stApp h3 {{
+                font-size: 22px !important;
+            }}
+            table {{
+                font-size: 14px !important;
+            }}
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    return text_color
+
+# Set the background image and get text color
+text_color = add_background_and_set_text_color(background_image)
+
+# Function to load data from GitHub
+@st.cache_data
+def load_data(url):
+    try:
+        df = pd.read_csv(url)
+        return df
+    except Exception as e:
+        st.error(f"❌ Error loading data from {url}: {e}")
+        return None
+
+# URLs of the CSV files (Ensure these URLs are correct and publicly accessible)
+section_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/section_list_6Th_semester%20-%20Sheet1.csv'
+elective_url = 'https://raw.githubusercontent.com/satyam26en/TIME_TABLE_KIIT/main/Professional_Elective%20-%20Sheet1.csv'
+core_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/6th_core%20-%20Sheet1.csv'
+
+# Load data
+section_df = load_data(section_url)
+elective_df = load_data(elective_url)
+core_df = load_data(core_url)
+
+# Check if data loaded successfully
+if section_df is None or elective_df is None or core_df is None:
+    st.stop()
+
+# Normalize the 'Roll No.' column to ensure consistency
+section_df['Roll No.'] = section_df['Roll No.'].astype(str).str.strip()
+
+# Define the order of days and times
+days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+times = ['8 TO 9', '9 TO 10', '10 TO 11', '11 TO 12', '12 TO 1', '1 TO 2', '2 TO 3', '3 TO 4', '4 TO 5']
+
+# Define a mapping from abbreviated to full day names
+day_mapping = {
+    'MON': 'Monday',
+    'TUE': 'Tuesday',
+    'WED': 'Wednesday',
+    'THU': 'Thursday',
+    'FRI': 'Friday',
+    'SAT': 'Saturday'
+}
+
+# Function to standardize time slot names
+def standardize_time_slot(time_slot):
+    time_slot_mapping = {
+        '8 TO 9': '8 TO 9',
+        '9 TO 10': '9 TO 10',
+        '10 TO 11': '10 TO 11',
+        '11 TO 12': '11 TO 12',
+        '12 TO 1': '12 TO 1',
+        '1 TO 2': '1 TO 2',
+        '2 TO 3': '2 TO 3',
+        '3 TO 4': '3 TO 4',
+        '4 TO 5': '4 TO 5'
+    }
+    # Remove extra spaces in the time slot string to match the mapping
+    standardized_slot = ' '.join(time_slot.upper().split())
+    return time_slot_mapping.get(standardized_slot, time_slot)
+
+# Function to generate the timetable dataframe
+def generate_timetable_df(roll_number):
+    # Find the section details for the given roll number
+    student_section = section_df[section_df['Roll No.'] == roll_number]
+
+    if student_section.empty:
+        st.error("❌ Roll number not found. Please check and try again.")
+        return None
+
+    # Extract the core section and elective sections
+    core_section = student_section['Core Section'].values[0]
+    elective_1_section = student_section['Professional Elective 1'].values[0]
+    elective_2_section = student_section['Professional Elective 2'].values[0]
+
+    # Retrieve the weekly timetable for Professional Electives 1 and 2
+    elective_1_timetable = elective_df[elective_df['Section(DE)'] == elective_1_section]
+    elective_2_timetable = elective_df[elective_df['Section(DE)'] == elective_2_section]
+    core_timetable = core_df[core_df['Section'] == core_section]
+
+    # Initialize the timetable matrix
+    timetable_matrix = pd.DataFrame(index=times, columns=days, data='')
+
+    # Function to fill the timetable matrix with subject names and room numbers
+    def fill_timetable(timetable_df):
+        room_columns = [col for col in timetable_df.columns if 'ROOM' in col]
+        for index, row in timetable_df.iterrows():
+            day = day_mapping.get(row['DAY'], 'Unknown')
+            if day == 'Unknown':
+                continue  # Skip if day is not in the mapping
+            for col in room_columns:
+                if row[col] != '---':
+                    time_col_index = timetable_df.columns.get_loc(col) + 1
+                    if time_col_index >= len(timetable_df.columns):
+                        continue  # Prevent index out of range
+                    time_col = timetable_df.columns[time_col_index]
+                    time_slot = standardize_time_slot(time_col)
+                    subject = row.get(time_col, 'N/A')
+                    room_number = row[col]
+                    if isinstance(subject, str) and subject.lower() != 'x':  # Only include if it's not 'x'
+                        # Append to existing entry if there's a conflict
+                        existing_entry = timetable_matrix.at[time_slot, day]
+                        # Wrap subject in <b> tags for bold text
+                        new_entry = f"<b>{subject} ({room_number})</b>"
+                        if existing_entry:
+                            timetable_matrix.at[time_slot, day] = existing_entry + "<br>" + new_entry
+                        else:
+                            timetable_matrix.at[time_slot, day] = new_entry
+
+    # Fill the timetable matrix for core and elective timetables
+    fill_timetable(core_timetable)
+    fill_timetable(elective_1_timetable)
+    fill_timetable(elective_2_timetable)
+
+    # Replace NaN values with blank spaces
+    timetable_matrix = timetable_matrix.fillna('')
+
+    # Sort the table based on time slots
+    timetable_matrix = timetable_matrix.reindex(times)
+
+    return timetable_matrix
+
+# Function to visualize the timetable using Plotly with selected color schemes
+def visualize_timetable(timetable_matrix, color_scheme):
+    if timetable_matrix is None:
+        return None
+
+    # Create bold Time column by wrapping with <b> tags
+    bold_time_slots = [f"<b>{time}</b>" for time in timetable_matrix.index]
+
+    # Create the table
+    fig = go.Figure(data=[go.Table(
+        columnwidth=[100] + [120]*6,
+        header=dict(
+            values=['<b>TIME</b>'] + [f'<b>{day.upper()}</b>' for day in days],  # Days in uppercase
+            fill_color=color_scheme['header_fill'],
+            align='center',
+            font=dict(color=color_scheme['header_text'], size=14, family='Arial Black'),
+            height=50
+        ),
+        cells=dict(
+            values=[bold_time_slots] + [timetable_matrix[day].tolist() for day in days],
+            fill=dict(
+                color=[
+                    [color_scheme['time_fill']] * len(times),  # Time column with selected fill color
+                    *[
+                        [color_scheme['day_fill_1']] * len(times) if i % 2 == 0 else [color_scheme['day_fill_2']] * len(times)
+                        for i in range(len(days))
+                    ]
+                ]
+            ),
+            align='center',
+            font=dict(
+                color=[
+                    color_scheme['time_text']
+                ] + [
+                    [color_scheme['day_text']] * len(times) for _ in days
+                ],
+                size=12,
+                family='Arial'
+            ),
+            height=40,
+            line_color='rgba(0,0,0,0.1)',
+            line_width=1
+        )
+    )])
+
+    # Update layout for better responsiveness
+    fig.update_layout(
+        autosize=True,
+        title=dict(
+            text='📅 Student Timetable',
+            x=0.5,
+            xanchor='center',
+            font=dict(size=24, family='Arial Black', color='teal')
+        ),
+        margin=dict(l=20, r=20, t=60, b=20),
+        height=700,  # You can adjust or remove this to let Plotly manage height
+        paper_bgcolor='rgba(0,0,0,0)',  # Transparent paper background
+        plot_bgcolor='rgba(0,0,0,0)',   # Transparent plot background
+        font=dict(family='Arial')
+    )
+
+    return fig
+
+# Function to save the timetable as an image
+def save_timetable_as_image(fig, filename='timetable.jpg'):
+    if fig is None:
+        st.error("❌ No figure to save.")
+        return
+    try:
+        img_bytes = fig.to_image(format='jpg')
+        return img_bytes
+    except Exception as e:
+        st.error(f"❌ Error saving image: {e}")
+        return None
+
+# Function to display download button in Streamlit
+def create_download_button(img_bytes, filename='timetable.jpg'):
+    if not img_bytes:
+        st.error("❌ No image to download.")
+        return
+    st.download_button(
+        label="📥 Download Timetable as JPG",
+        data=img_bytes,
+        file_name=filename,
+        mime="image/jpg",
+        key='download-button'
+    )
+
+# Function to set background image and determine text color
+def add_background_and_set_text_color(selected_background):
+    # Download the selected background image
+    try:
+        response = requests.get(selected_background)
+        response.raise_for_status()
+        img = Image.open(BytesIO(response.content))
+    except Exception as e:
+        st.error(f"❌ Failed to load background image: {e}")
+        return "#FFFFFF"  # Default to white if image fails
+
+    # Calculate the average brightness
+    avg_brightness = calculate_average_brightness(img)
+
+    # Determine text color based on brightness
+    text_color = "#000000" if avg_brightness > 127 else "#FFFFFF"
+
+    # Inject custom CSS to set the background image and adjust table-container
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("{selected_background}");
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }}
+        /* Table container with no padding or margin */
+        .table-container {{
+            overflow-x: auto;
+            padding: 0;
+            margin: 0;
+        }}
+        /* Responsive adjustments */
+        @media only screen and (max-width: 600px) {{
+            .stApp h1 {{
+                font-size: 24px !important;
+            }}
+            .stApp h3 {{
+                font-size: 18px !important;
+            }}
+            table {{
+                font-size: 10px !important;
+            }}
+        }}
+        @media only screen and (min-width: 601px) and (max-width: 1024px) {{
+            .stApp h1 {{
+                font-size: 28px !important;
+            }}
+            .stApp h3 {{
+                font-size: 20px !important;
+            }}
+            table {{
+                font-size: 12px !important;
+            }}
+        }}
+        @media only screen and (min-width: 1025px) {{
+            .stApp h1 {{
+                font-size: 32px !important;
+            }}
+            .stApp h3 {{
+                font-size: 22px !important;
+            }}
+            table {{
+                font-size: 14px !important;
+            }}
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    return text_color
+
+# Set the background image and get text color
+text_color = add_background_and_set_text_color(background_image)
+
+# Function to load data from GitHub
+@st.cache_data
+def load_data(url):
+    try:
+        df = pd.read_csv(url)
+        return df
+    except Exception as e:
+        st.error(f"❌ Error loading data from {url}: {e}")
+        return None
+
+# URLs of the CSV files (Ensure these URLs are correct and publicly accessible)
+section_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/section_list_6Th_semester%20-%20Sheet1.csv'
+elective_url = 'https://raw.githubusercontent.com/satyam26en/TIME_TABLE_KIIT/main/Professional_Elective%20-%20Sheet1.csv'
+core_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/6th_core%20-%20Sheet1.csv'
+
+# Load data
+section_df = load_data(section_url)
+elective_df = load_data(elective_url)
+core_df = load_data(core_url)
+
+# Check if data loaded successfully
+if section_df is None or elective_df is None or core_df is None:
+    st.stop()
+
+# Normalize the 'Roll No.' column to ensure consistency
+section_df['Roll No.'] = section_df['Roll No.'].astype(str).str.strip()
+
+# Define the order of days and times
+days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+times = ['8 TO 9', '9 TO 10', '10 TO 11', '11 TO 12', '12 TO 1', '1 TO 2', '2 TO 3', '3 TO 4', '4 TO 5']
+
+# Define a mapping from abbreviated to full day names
+day_mapping = {
+    'MON': 'Monday',
+    'TUE': 'Tuesday',
+    'WED': 'Wednesday',
+    'THU': 'Thursday',
+    'FRI': 'Friday',
+    'SAT': 'Saturday'
+}
+
+# Function to standardize time slot names
+def standardize_time_slot(time_slot):
+    time_slot_mapping = {
+        '8 TO 9': '8 TO 9',
+        '9 TO 10': '9 TO 10',
+        '10 TO 11': '10 TO 11',
+        '11 TO 12': '11 TO 12',
+        '12 TO 1': '12 TO 1',
+        '1 TO 2': '1 TO 2',
+        '2 TO 3': '2 TO 3',
+        '3 TO 4': '3 TO 4',
+        '4 TO 5': '4 TO 5'
+    }
+    # Remove extra spaces in the time slot string to match the mapping
+    standardized_slot = ' '.join(time_slot.upper().split())
+    return time_slot_mapping.get(standardized_slot, time_slot)
+
+# Function to generate the timetable dataframe
+def generate_timetable_df(roll_number):
+    # Find the section details for the given roll number
+    student_section = section_df[section_df['Roll No.'] == roll_number]
+
+    if student_section.empty:
+        st.error("❌ Roll number not found. Please check and try again.")
+        return None
+
+    # Extract the core section and elective sections
+    core_section = student_section['Core Section'].values[0]
+    elective_1_section = student_section['Professional Elective 1'].values[0]
+    elective_2_section = student_section['Professional Elective 2'].values[0]
+
+    # Retrieve the weekly timetable for Professional Electives 1 and 2
+    elective_1_timetable = elective_df[elective_df['Section(DE)'] == elective_1_section]
+    elective_2_timetable = elective_df[elective_df['Section(DE)'] == elective_2_section]
+    core_timetable = core_df[core_df['Section'] == core_section]
+
+    # Initialize the timetable matrix
+    timetable_matrix = pd.DataFrame(index=times, columns=days, data='')
+
+    # Function to fill the timetable matrix with subject names and room numbers
+    def fill_timetable(timetable_df):
+        room_columns = [col for col in timetable_df.columns if 'ROOM' in col]
+        for index, row in timetable_df.iterrows():
+            day = day_mapping.get(row['DAY'], 'Unknown')
+            if day == 'Unknown':
+                continue  # Skip if day is not in the mapping
+            for col in room_columns:
+                if row[col] != '---':
+                    time_col_index = timetable_df.columns.get_loc(col) + 1
+                    if time_col_index >= len(timetable_df.columns):
+                        continue  # Prevent index out of range
+                    time_col = timetable_df.columns[time_col_index]
+                    time_slot = standardize_time_slot(time_col)
+                    subject = row.get(time_col, 'N/A')
+                    room_number = row[col]
+                    if isinstance(subject, str) and subject.lower() != 'x':  # Only include if it's not 'x'
+                        # Append to existing entry if there's a conflict
+                        existing_entry = timetable_matrix.at[time_slot, day]
+                        # Wrap subject in <b> tags for bold text
+                        new_entry = f"<b>{subject} ({room_number})</b>"
+                        if existing_entry:
+                            timetable_matrix.at[time_slot, day] = existing_entry + "<br>" + new_entry
+                        else:
+                            timetable_matrix.at[time_slot, day] = new_entry
+
+    # Fill the timetable matrix for core and elective timetables
+    fill_timetable(core_timetable)
+    fill_timetable(elective_1_timetable)
+    fill_timetable(elective_2_timetable)
+
+    # Replace NaN values with blank spaces
+    timetable_matrix = timetable_matrix.fillna('')
+
+    # Sort the table based on time slots
+    timetable_matrix = timetable_matrix.reindex(times)
+
+    return timetable_matrix
+
+# Function to visualize the timetable using Plotly with selected color schemes
+def visualize_timetable(timetable_matrix, color_scheme):
+    if timetable_matrix is None:
+        return None
+
+    # Create bold Time column by wrapping with <b> tags
+    bold_time_slots = [f"<b>{time}</b>" for time in timetable_matrix.index]
+
+    # Create the table
+    fig = go.Figure(data=[go.Table(
+        columnwidth=[100] + [120]*6,
+        header=dict(
+            values=['<b>TIME</b>'] + [f'<b>{day.upper()}</b>' for day in days],  # Days in uppercase
+            fill_color=color_scheme['header_fill'],
+            align='center',
+            font=dict(color=color_scheme['header_text'], size=14, family='Arial Black'),
+            height=50
+        ),
+        cells=dict(
+            values=[bold_time_slots] + [timetable_matrix[day].tolist() for day in days],
+            fill=dict(
+                color=[
+                    [color_scheme['time_fill']] * len(times),  # Time column with selected fill color
+                    *[
+                        [color_scheme['day_fill_1']] * len(times) if i % 2 == 0 else [color_scheme['day_fill_2']] * len(times)
+                        for i in range(len(days))
+                    ]
+                ]
+            ),
+            align='center',
+            font=dict(
+                color=[
+                    color_scheme['time_text']
+                ] + [
+                    [color_scheme['day_text']] * len(times) for _ in days
+                ],
+                size=12,
+                family='Arial'
+            ),
+            height=40,
+            line_color='rgba(0,0,0,0.1)',
+            line_width=1
+        )
+    )])
+
+    # Update layout for better responsiveness
+    fig.update_layout(
+        autosize=True,
+        title=dict(
+            text='📅 Student Timetable',
+            x=0.5,
+            xanchor='center',
+            font=dict(size=24, family='Arial Black', color='teal')
+        ),
+        margin=dict(l=20, r=20, t=60, b=20),
+        height=700,  # You can adjust or remove this to let Plotly manage height
+        paper_bgcolor='rgba(0,0,0,0)',  # Transparent paper background
+        plot_bgcolor='rgba(0,0,0,0)',   # Transparent plot background
+        font=dict(family='Arial')
+    )
+
+    return fig
+
+# Function to save the timetable as an image
+def save_timetable_as_image(fig, filename='timetable.jpg'):
+    if fig is None:
+        st.error("❌ No figure to save.")
+        return
+    try:
+        img_bytes = fig.to_image(format='jpg')
+        return img_bytes
+    except Exception as e:
+        st.error(f"❌ Error saving image: {e}")
+        return None
+
+# Function to display download button in Streamlit
+def create_download_button(img_bytes, filename='timetable.jpg'):
+    if not img_bytes:
+        st.error("❌ No image to download.")
+        return
+    st.download_button(
+        label="📥 Download Timetable as JPG",
+        data=img_bytes,
+        file_name=filename,
+        mime="image/jpg",
+        key='download-button'
+    )
+
+# Function to set background image and determine text color
+def add_background_and_set_text_color(selected_background):
+    # Download the selected background image
+    try:
+        response = requests.get(selected_background)
+        response.raise_for_status()
+        img = Image.open(BytesIO(response.content))
+    except Exception as e:
+        st.error(f"❌ Failed to load background image: {e}")
+        return "#FFFFFF"  # Default to white if image fails
+
+    # Calculate the average brightness
+    avg_brightness = calculate_average_brightness(img)
+
+    # Determine text color based on brightness
+    text_color = "#000000" if avg_brightness > 127 else "#FFFFFF"
+
+    # Inject custom CSS to set the background image and adjust table-container
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("{selected_background}");
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }}
+        /* Table container with no padding or margin */
+        .table-container {{
+            overflow-x: auto;
+            padding: 0;
+            margin: 0;
+        }}
+        /* Responsive adjustments */
+        @media only screen and (max-width: 600px) {{
+            .stApp h1 {{
+                font-size: 24px !important;
+            }}
+            .stApp h3 {{
+                font-size: 18px !important;
+            }}
+            table {{
+                font-size: 10px !important;
+            }}
+        }}
+        @media only screen and (min-width: 601px) and (max-width: 1024px) {{
+            .stApp h1 {{
+                font-size: 28px !important;
+            }}
+            .stApp h3 {{
+                font-size: 20px !important;
+            }}
+            table {{
+                font-size: 12px !important;
+            }}
+        }}
+        @media only screen and (min-width: 1025px) {{
+            .stApp h1 {{
+                font-size: 32px !important;
+            }}
+            .stApp h3 {{
+                font-size: 22px !important;
+            }}
+            table {{
+                font-size: 14px !important;
+            }}
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    return text_color
+
+# Set the background image and get text color
+text_color = add_background_and_set_text_color(background_image)
+
+# Function to load data from GitHub
+@st.cache_data
+def load_data(url):
+    try:
+        df = pd.read_csv(url)
+        return df
+    except Exception as e:
+        st.error(f"❌ Error loading data from {url}: {e}")
+        return None
+
+# URLs of the CSV files (Ensure these URLs are correct and publicly accessible)
+section_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/section_list_6Th_semester%20-%20Sheet1.csv'
+elective_url = 'https://raw.githubusercontent.com/satyam26en/TIME_TABLE_KIIT/main/Professional_Elective%20-%20Sheet1.csv'
+core_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/6th_core%20-%20Sheet1.csv'
+
+# Load data
+section_df = load_data(section_url)
+elective_df = load_data(elective_url)
+core_df = load_data(core_url)
+
+# Check if data loaded successfully
+if section_df is None or elective_df is None or core_df is None:
+    st.stop()
+
+# Normalize the 'Roll No.' column to ensure consistency
+section_df['Roll No.'] = section_df['Roll No.'].astype(str).str.strip()
+
+# Define the order of days and times
+days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+times = ['8 TO 9', '9 TO 10', '10 TO 11', '11 TO 12', '12 TO 1', '1 TO 2', '2 TO 3', '3 TO 4', '4 TO 5']
+
+# Define a mapping from abbreviated to full day names
+day_mapping = {
+    'MON': 'Monday',
+    'TUE': 'Tuesday',
+    'WED': 'Wednesday',
+    'THU': 'Thursday',
+    'FRI': 'Friday',
+    'SAT': 'Saturday'
+}
+
+# Function to standardize time slot names
+def standardize_time_slot(time_slot):
+    time_slot_mapping = {
+        '8 TO 9': '8 TO 9',
+        '9 TO 10': '9 TO 10',
+        '10 TO 11': '10 TO 11',
+        '11 TO 12': '11 TO 12',
+        '12 TO 1': '12 TO 1',
+        '1 TO 2': '1 TO 2',
+        '2 TO 3': '2 TO 3',
+        '3 TO 4': '3 TO 4',
+        '4 TO 5': '4 TO 5'
+    }
+    # Remove extra spaces in the time slot string to match the mapping
+    standardized_slot = ' '.join(time_slot.upper().split())
+    return time_slot_mapping.get(standardized_slot, time_slot)
+
+# Function to generate the timetable dataframe
+def generate_timetable_df(roll_number):
+    # Find the section details for the given roll number
+    student_section = section_df[section_df['Roll No.'] == roll_number]
+
+    if student_section.empty:
+        st.error("❌ Roll number not found. Please check and try again.")
+        return None
+
+    # Extract the core section and elective sections
+    core_section = student_section['Core Section'].values[0]
+    elective_1_section = student_section['Professional Elective 1'].values[0]
+    elective_2_section = student_section['Professional Elective 2'].values[0]
+
+    # Retrieve the weekly timetable for Professional Electives 1 and 2
+    elective_1_timetable = elective_df[elective_df['Section(DE)'] == elective_1_section]
+    elective_2_timetable = elective_df[elective_df['Section(DE)'] == elective_2_section]
+    core_timetable = core_df[core_df['Section'] == core_section]
+
+    # Initialize the timetable matrix
+    timetable_matrix = pd.DataFrame(index=times, columns=days, data='')
+
+    # Function to fill the timetable matrix with subject names and room numbers
+    def fill_timetable(timetable_df):
+        room_columns = [col for col in timetable_df.columns if 'ROOM' in col]
+        for index, row in timetable_df.iterrows():
+            day = day_mapping.get(row['DAY'], 'Unknown')
+            if day == 'Unknown':
+                continue  # Skip if day is not in the mapping
+            for col in room_columns:
+                if row[col] != '---':
+                    time_col_index = timetable_df.columns.get_loc(col) + 1
+                    if time_col_index >= len(timetable_df.columns):
+                        continue  # Prevent index out of range
+                    time_col = timetable_df.columns[time_col_index]
+                    time_slot = standardize_time_slot(time_col)
+                    subject = row.get(time_col, 'N/A')
+                    room_number = row[col]
+                    if isinstance(subject, str) and subject.lower() != 'x':  # Only include if it's not 'x'
+                        # Append to existing entry if there's a conflict
+                        existing_entry = timetable_matrix.at[time_slot, day]
+                        # Wrap subject in <b> tags for bold text
+                        new_entry = f"<b>{subject} ({room_number})</b>"
+                        if existing_entry:
+                            timetable_matrix.at[time_slot, day] = existing_entry + "<br>" + new_entry
+                        else:
+                            timetable_matrix.at[time_slot, day] = new_entry
+
+    # Fill the timetable matrix for core and elective timetables
+    fill_timetable(core_timetable)
+    fill_timetable(elective_1_timetable)
+    fill_timetable(elective_2_timetable)
+
+    # Replace NaN values with blank spaces
+    timetable_matrix = timetable_matrix.fillna('')
+
+    # Sort the table based on time slots
+    timetable_matrix = timetable_matrix.reindex(times)
+
+    return timetable_matrix
+
+# Function to visualize the timetable using Plotly with selected color schemes
+def visualize_timetable(timetable_matrix, color_scheme):
+    if timetable_matrix is None:
+        return None
+
+    # Create bold Time column by wrapping with <b> tags
+    bold_time_slots = [f"<b>{time}</b>" for time in timetable_matrix.index]
+
+    # Create the table
+    fig = go.Figure(data=[go.Table(
+        columnwidth=[100] + [120]*6,
+        header=dict(
+            values=['<b>TIME</b>'] + [f'<b>{day.upper()}</b>' for day in days],  # Days in uppercase
+            fill_color=color_scheme['header_fill'],
+            align='center',
+            font=dict(color=color_scheme['header_text'], size=14, family='Arial Black'),
+            height=50
+        ),
+        cells=dict(
+            values=[bold_time_slots] + [timetable_matrix[day].tolist() for day in days],
+            fill=dict(
+                color=[
+                    [color_scheme['time_fill']] * len(times),  # Time column with selected fill color
+                    *[
+                        [color_scheme['day_fill_1']] * len(times) if i % 2 == 0 else [color_scheme['day_fill_2']] * len(times)
+                        for i in range(len(days))
+                    ]
+                ]
+            ),
+            align='center',
+            font=dict(
+                color=[
+                    color_scheme['time_text']
+                ] + [
+                    [color_scheme['day_text']] * len(times) for _ in days
+                ],
+                size=12,
+                family='Arial'
+            ),
+            height=40,
+            line_color='rgba(0,0,0,0.1)',
+            line_width=1
+        )
+    )])
+
+    # Update layout for better responsiveness
+    fig.update_layout(
+        autosize=True,
+        title=dict(
+            text='📅 Student Timetable',
+            x=0.5,
+            xanchor='center',
+            font=dict(size=24, family='Arial Black', color='teal')
+        ),
+        margin=dict(l=20, r=20, t=60, b=20),
+        height=700,  # You can adjust or remove this to let Plotly manage height
+        paper_bgcolor='rgba(0,0,0,0)',  # Transparent paper background
+        plot_bgcolor='rgba(0,0,0,0)',   # Transparent plot background
+        font=dict(family='Arial')
+    )
+
+    return fig
+
+# Function to save the timetable as an image
+def save_timetable_as_image(fig, filename='timetable.jpg'):
+    if fig is None:
+        st.error("❌ No figure to save.")
+        return
+    try:
+        img_bytes = fig.to_image(format='jpg')
+        return img_bytes
+    except Exception as e:
+        st.error(f"❌ Error saving image: {e}")
+        return None
+
+# Function to display download button in Streamlit
+def create_download_button(img_bytes, filename='timetable.jpg'):
+    if not img_bytes:
+        st.error("❌ No image to download.")
+        return
+    st.download_button(
+        label="📥 Download Timetable as JPG",
+        data=img_bytes,
+        file_name=filename,
+        mime="image/jpg",
+        key='download-button'
+    )
+
+# Function to set background image and determine text color
+def add_background_and_set_text_color(selected_background):
+    # Download the selected background image
+    try:
+        response = requests.get(selected_background)
+        response.raise_for_status()
+        img = Image.open(BytesIO(response.content))
+    except Exception as e:
+        st.error(f"❌ Failed to load background image: {e}")
+        return "#FFFFFF"  # Default to white if image fails
+
+    # Calculate the average brightness
+    avg_brightness = calculate_average_brightness(img)
+
+    # Determine text color based on brightness
+    text_color = "#000000" if avg_brightness > 127 else "#FFFFFF"
+
+    # Inject custom CSS to set the background image and adjust table-container
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("{selected_background}");
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }}
+        /* Table container with no padding or margin */
+        .table-container {{
+            overflow-x: auto;
+            padding: 0;
+            margin: 0;
+        }}
+        /* Responsive adjustments */
+        @media only screen and (max-width: 600px) {{
+            .stApp h1 {{
+                font-size: 24px !important;
+            }}
+            .stApp h3 {{
+                font-size: 18px !important;
+            }}
+            table {{
+                font-size: 10px !important;
+            }}
+        }}
+        @media only screen and (min-width: 601px) and (max-width: 1024px) {{
+            .stApp h1 {{
+                font-size: 28px !important;
+            }}
+            .stApp h3 {{
+                font-size: 20px !important;
+            }}
+            table {{
+                font-size: 12px !important;
+            }}
+        }}
+        @media only screen and (min-width: 1025px) {{
+            .stApp h1 {{
+                font-size: 32px !important;
+            }}
+            .stApp h3 {{
+                font-size: 22px !important;
+            }}
+            table {{
+                font-size: 14px !important;
+            }}
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    return text_color
+
+# Set the background image and get text color
+text_color = add_background_and_set_text_color(background_image)
+
+# Function to load data from GitHub
+@st.cache_data
+def load_data(url):
+    try:
+        df = pd.read_csv(url)
+        return df
+    except Exception as e:
+        st.error(f"❌ Error loading data from {url}: {e}")
+        return None
+
+# URLs of the CSV files (Ensure these URLs are correct and publicly accessible)
+section_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/section_list_6Th_semester%20-%20Sheet1.csv'
+elective_url = 'https://raw.githubusercontent.com/satyam26en/TIME_TABLE_KIIT/main/Professional_Elective%20-%20Sheet1.csv'
+core_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/6th_core%20-%20Sheet1.csv'
+
+# Load data
+section_df = load_data(section_url)
+elective_df = load_data(elective_url)
+core_df = load_data(core_url)
+
+# Check if data loaded successfully
+if section_df is None or elective_df is None or core_df is None:
+    st.stop()
+
+# Normalize the 'Roll No.' column to ensure consistency
+section_df['Roll No.'] = section_df['Roll No.'].astype(str).str.strip()
+
+# Define the order of days and times
+days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+times = ['8 TO 9', '9 TO 10', '10 TO 11', '11 TO 12', '12 TO 1', '1 TO 2', '2 TO 3', '3 TO 4', '4 TO 5']
+
+# Define a mapping from abbreviated to full day names
+day_mapping = {
+    'MON': 'Monday',
+    'TUE': 'Tuesday',
+    'WED': 'Wednesday',
+    'THU': 'Thursday',
+    'FRI': 'Friday',
+    'SAT': 'Saturday'
+}
+
+# Function to standardize time slot names
+def standardize_time_slot(time_slot):
+    time_slot_mapping = {
+        '8 TO 9': '8 TO 9',
+        '9 TO 10': '9 TO 10',
+        '10 TO 11': '10 TO 11',
+        '11 TO 12': '11 TO 12',
+        '12 TO 1': '12 TO 1',
+        '1 TO 2': '1 TO 2',
+        '2 TO 3': '2 TO 3',
+        '3 TO 4': '3 TO 4',
+        '4 TO 5': '4 TO 5'
+    }
+    # Remove extra spaces in the time slot string to match the mapping
+    standardized_slot = ' '.join(time_slot.upper().split())
+    return time_slot_mapping.get(standardized_slot, time_slot)
+
+# Function to generate the timetable dataframe
+def generate_timetable_df(roll_number):
+    # Find the section details for the given roll number
+    student_section = section_df[section_df['Roll No.'] == roll_number]
+
+    if student_section.empty:
+        st.error("❌ Roll number not found. Please check and try again.")
+        return None
+
+    # Extract the core section and elective sections
+    core_section = student_section['Core Section'].values[0]
+    elective_1_section = student_section['Professional Elective 1'].values[0]
+    elective_2_section = student_section['Professional Elective 2'].values[0]
+
+    # Retrieve the weekly timetable for Professional Electives 1 and 2
+    elective_1_timetable = elective_df[elective_df['Section(DE)'] == elective_1_section]
+    elective_2_timetable = elective_df[elective_df['Section(DE)'] == elective_2_section]
+    core_timetable = core_df[core_df['Section'] == core_section]
+
+    # Initialize the timetable matrix
+    timetable_matrix = pd.DataFrame(index=times, columns=days, data='')
+
+    # Function to fill the timetable matrix with subject names and room numbers
+    def fill_timetable(timetable_df):
+        room_columns = [col for col in timetable_df.columns if 'ROOM' in col]
+        for index, row in timetable_df.iterrows():
+            day = day_mapping.get(row['DAY'], 'Unknown')
+            if day == 'Unknown':
+                continue  # Skip if day is not in the mapping
+            for col in room_columns:
+                if row[col] != '---':
+                    time_col_index = timetable_df.columns.get_loc(col) + 1
+                    if time_col_index >= len(timetable_df.columns):
+                        continue  # Prevent index out of range
+                    time_col = timetable_df.columns[time_col_index]
+                    time_slot = standardize_time_slot(time_col)
+                    subject = row.get(time_col, 'N/A')
+                    room_number = row[col]
+                    if isinstance(subject, str) and subject.lower() != 'x':  # Only include if it's not 'x'
+                        # Append to existing entry if there's a conflict
+                        existing_entry = timetable_matrix.at[time_slot, day]
+                        # Wrap subject in <b> tags for bold text
+                        new_entry = f"<b>{subject} ({room_number})</b>"
+                        if existing_entry:
+                            timetable_matrix.at[time_slot, day] = existing_entry + "<br>" + new_entry
+                        else:
+                            timetable_matrix.at[time_slot, day] = new_entry
+
+    # Fill the timetable matrix for core and elective timetables
+    fill_timetable(core_timetable)
+    fill_timetable(elective_1_timetable)
+    fill_timetable(elective_2_timetable)
+
+    # Replace NaN values with blank spaces
+    timetable_matrix = timetable_matrix.fillna('')
+
+    # Sort the table based on time slots
+    timetable_matrix = timetable_matrix.reindex(times)
+
+    return timetable_matrix
+
+# Function to visualize the timetable using Plotly with selected color schemes
+def visualize_timetable(timetable_matrix, color_scheme):
+    if timetable_matrix is None:
+        return None
+
+    # Create bold Time column by wrapping with <b> tags
+    bold_time_slots = [f"<b>{time}</b>" for time in timetable_matrix.index]
+
+    # Create the table
+    fig = go.Figure(data=[go.Table(
+        columnwidth=[100] + [120]*6,
+        header=dict(
+            values=['<b>TIME</b>'] + [f'<b>{day.upper()}</b>' for day in days],  # Days in uppercase
+            fill_color=color_scheme['header_fill'],
+            align='center',
+            font=dict(color=color_scheme['header_text'], size=14, family='Arial Black'),
+            height=50
+        ),
+        cells=dict(
+            values=[bold_time_slots] + [timetable_matrix[day].tolist() for day in days],
+            fill=dict(
+                color=[
+                    [color_scheme['time_fill']] * len(times),  # Time column with selected fill color
+                    *[
+                        [color_scheme['day_fill_1']] * len(times) if i % 2 == 0 else [color_scheme['day_fill_2']] * len(times)
+                        for i in range(len(days))
+                    ]
+                ]
+            ),
+            align='center',
+            font=dict(
+                color=[
+                    color_scheme['time_text']
+                ] + [
+                    [color_scheme['day_text']] * len(times) for _ in days
+                ],
+                size=12,
+                family='Arial'
+            ),
+            height=40,
+            line_color='rgba(0,0,0,0.1)',
+            line_width=1
+        )
+    )])
+
+    # Update layout for better responsiveness
+    fig.update_layout(
+        autosize=True,
+        title=dict(
+            text='📅 Student Timetable',
+            x=0.5,
+            xanchor='center',
+            font=dict(size=24, family='Arial Black', color='teal')
+        ),
+        margin=dict(l=20, r=20, t=60, b=20),
+        height=700,  # You can adjust or remove this to let Plotly manage height
+        paper_bgcolor='rgba(0,0,0,0)',  # Transparent paper background
+        plot_bgcolor='rgba(0,0,0,0)',   # Transparent plot background
+        font=dict(family='Arial')
+    )
+
+    return fig
+
+# Function to save the timetable as an image
+def save_timetable_as_image(fig, filename='timetable.jpg'):
+    if fig is None:
+        st.error("❌ No figure to save.")
+        return
+    try:
+        img_bytes = fig.to_image(format='jpg')
+        return img_bytes
+    except Exception as e:
+        st.error(f"❌ Error saving image: {e}")
+        return None
+
+# Function to display download button in Streamlit
+def create_download_button(img_bytes, filename='timetable.jpg'):
+    if not img_bytes:
+        st.error("❌ No image to download.")
+        return
+    st.download_button(
+        label="📥 Download Timetable as JPG",
+        data=img_bytes,
+        file_name=filename,
+        mime="image/jpg",
+        key='download-button'
+    )
+
+# Function to set background image and determine text color
+def add_background_and_set_text_color(selected_background):
+    # Download the selected background image
+    try:
+        response = requests.get(selected_background)
+        response.raise_for_status()
+        img = Image.open(BytesIO(response.content))
+    except Exception as e:
+        st.error(f"❌ Failed to load background image: {e}")
+        return "#FFFFFF"  # Default to white if image fails
+
+    # Calculate the average brightness
+    avg_brightness = calculate_average_brightness(img)
+
+    # Determine text color based on brightness
+    text_color = "#000000" if avg_brightness > 127 else "#FFFFFF"
+
+    # Inject custom CSS to set the background image and adjust table-container
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("{selected_background}");
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }}
+        /* Table container with no padding or margin */
+        .table-container {{
+            overflow-x: auto;
+            padding: 0;
+            margin: 0;
+        }}
+        /* Responsive adjustments */
+        @media only screen and (max-width: 600px) {{
+            .stApp h1 {{
+                font-size: 24px !important;
+            }}
+            .stApp h3 {{
+                font-size: 18px !important;
+            }}
+            table {{
+                font-size: 10px !important;
+            }}
+        }}
+        @media only screen and (min-width: 601px) and (max-width: 1024px) {{
+            .stApp h1 {{
+                font-size: 28px !important;
+            }}
+            .stApp h3 {{
+                font-size: 20px !important;
+            }}
+            table {{
+                font-size: 12px !important;
+            }}
+        }}
+        @media only screen and (min-width: 1025px) {{
+            .stApp h1 {{
+                font-size: 32px !important;
+            }}
+            .stApp h3 {{
+                font-size: 22px !important;
+            }}
+            table {{
+                font-size: 14px !important;
+            }}
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    return text_color
+
+# Set the background image and get text color
+text_color = add_background_and_set_text_color(background_image)
+
+# Function to load data from GitHub
+@st.cache_data
+def load_data(url):
+    try:
+        df = pd.read_csv(url)
+        return df
+    except Exception as e:
+        st.error(f"❌ Error loading data from {url}: {e}")
+        return None
+
+# URLs of the CSV files (Ensure these URLs are correct and publicly accessible)
+section_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/section_list_6Th_semester%20-%20Sheet1.csv'
+elective_url = 'https://raw.githubusercontent.com/satyam26en/TIME_TABLE_KIIT/main/Professional_Elective%20-%20Sheet1.csv'
+core_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/6th_core%20-%20Sheet1.csv'
+
+# Load data
+section_df = load_data(section_url)
+elective_df = load_data(elective_url)
+core_df = load_data(core_url)
+
+# Check if data loaded successfully
+if section_df is None or elective_df is None or core_df is None:
+    st.stop()
+
+# Normalize the 'Roll No.' column to ensure consistency
+section_df['Roll No.'] = section_df['Roll No.'].astype(str).str.strip()
+
+# Define the order of days and times
+days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+times = ['8 TO 9', '9 TO 10', '10 TO 11', '11 TO 12', '12 TO 1', '1 TO 2', '2 TO 3', '3 TO 4', '4 TO 5']
+
+# Define a mapping from abbreviated to full day names
+day_mapping = {
+    'MON': 'Monday',
+    'TUE': 'Tuesday',
+    'WED': 'Wednesday',
+    'THU': 'Thursday',
+    'FRI': 'Friday',
+    'SAT': 'Saturday'
+}
+
+# Function to standardize time slot names
+def standardize_time_slot(time_slot):
+    time_slot_mapping = {
+        '8 TO 9': '8 TO 9',
+        '9 TO 10': '9 TO 10',
+        '10 TO 11': '10 TO 11',
+        '11 TO 12': '11 TO 12',
+        '12 TO 1': '12 TO 1',
+        '1 TO 2': '1 TO 2',
+        '2 TO 3': '2 TO 3',
+        '3 TO 4': '3 TO 4',
+        '4 TO 5': '4 TO 5'
+    }
+    # Remove extra spaces in the time slot string to match the mapping
+    standardized_slot = ' '.join(time_slot.upper().split())
+    return time_slot_mapping.get(standardized_slot, time_slot)
+
+# Function to generate the timetable dataframe
+def generate_timetable_df(roll_number):
+    # Find the section details for the given roll number
+    student_section = section_df[section_df['Roll No.'] == roll_number]
+
+    if student_section.empty:
+        st.error("❌ Roll number not found. Please check and try again.")
+        return None
+
+    # Extract the core section and elective sections
+    core_section = student_section['Core Section'].values[0]
+    elective_1_section = student_section['Professional Elective 1'].values[0]
+    elective_2_section = student_section['Professional Elective 2'].values[0]
+
+    # Retrieve the weekly timetable for Professional Electives 1 and 2
+    elective_1_timetable = elective_df[elective_df['Section(DE)'] == elective_1_section]
+    elective_2_timetable = elective_df[elective_df['Section(DE)'] == elective_2_section]
+    core_timetable = core_df[core_df['Section'] == core_section]
+
+    # Initialize the timetable matrix
+    timetable_matrix = pd.DataFrame(index=times, columns=days, data='')
+
+    # Function to fill the timetable matrix with subject names and room numbers
+    def fill_timetable(timetable_df):
+        room_columns = [col for col in timetable_df.columns if 'ROOM' in col]
+        for index, row in timetable_df.iterrows():
+            day = day_mapping.get(row['DAY'], 'Unknown')
+            if day == 'Unknown':
+                continue  # Skip if day is not in the mapping
+            for col in room_columns:
+                if row[col] != '---':
+                    time_col_index = timetable_df.columns.get_loc(col) + 1
+                    if time_col_index >= len(timetable_df.columns):
+                        continue  # Prevent index out of range
+                    time_col = timetable_df.columns[time_col_index]
+                    time_slot = standardize_time_slot(time_col)
+                    subject = row.get(time_col, 'N/A')
+                    room_number = row[col]
+                    if isinstance(subject, str) and subject.lower() != 'x':  # Only include if it's not 'x'
+                        # Append to existing entry if there's a conflict
+                        existing_entry = timetable_matrix.at[time_slot, day]
+                        # Wrap subject in <b> tags for bold text
+                        new_entry = f"<b>{subject} ({room_number})</b>"
+                        if existing_entry:
+                            timetable_matrix.at[time_slot, day] = existing_entry + "<br>" + new_entry
+                        else:
+                            timetable_matrix.at[time_slot, day] = new_entry
+
+    # Fill the timetable matrix for core and elective timetables
+    fill_timetable(core_timetable)
+    fill_timetable(elective_1_timetable)
+    fill_timetable(elective_2_timetable)
+
+    # Replace NaN values with blank spaces
+    timetable_matrix = timetable_matrix.fillna('')
+
+    # Sort the table based on time slots
+    timetable_matrix = timetable_matrix.reindex(times)
+
+    return timetable_matrix
+
+# Function to visualize the timetable using Plotly with selected color schemes
+def visualize_timetable(timetable_matrix, color_scheme):
+    if timetable_matrix is None:
+        return None
+
+    # Create bold Time column by wrapping with <b> tags
+    bold_time_slots = [f"<b>{time}</b>" for time in timetable_matrix.index]
+
+    # Create the table
+    fig = go.Figure(data=[go.Table(
+        columnwidth=[100] + [120]*6,
+        header=dict(
+            values=['<b>TIME</b>'] + [f'<b>{day.upper()}</b>' for day in days],  # Days in uppercase
+            fill_color=color_scheme['header_fill'],
+            align='center',
+            font=dict(color=color_scheme['header_text'], size=14, family='Arial Black'),
+            height=50
+        ),
+        cells=dict(
+            values=[bold_time_slots] + [timetable_matrix[day].tolist() for day in days],
+            fill=dict(
+                color=[
+                    [color_scheme['time_fill']] * len(times),  # Time column with selected fill color
+                    *[
+                        [color_scheme['day_fill_1']] * len(times) if i % 2 == 0 else [color_scheme['day_fill_2']] * len(times)
+                        for i in range(len(days))
+                    ]
+                ]
+            ),
+            align='center',
+            font=dict(
+                color=[
+                    color_scheme['time_text']
+                ] + [
+                    [color_scheme['day_text']] * len(times) for _ in days
+                ],
+                size=12,
+                family='Arial'
+            ),
+            height=40,
+            line_color='rgba(0,0,0,0.1)',
+            line_width=1
+        )
+    )])
+
+    # Update layout for better responsiveness
+    fig.update_layout(
+        autosize=True,
+        title=dict(
+            text='📅 Student Timetable',
+            x=0.5,
+            xanchor='center',
+            font=dict(size=24, family='Arial Black', color='teal')
+        ),
+        margin=dict(l=20, r=20, t=60, b=20),
+        height=700,  # You can adjust or remove this to let Plotly manage height
+        paper_bgcolor='rgba(0,0,0,0)',  # Transparent paper background
+        plot_bgcolor='rgba(0,0,0,0)',   # Transparent plot background
+        font=dict(family='Arial')
+    )
+
+    return fig
+
+# Function to save the timetable as an image
+def save_timetable_as_image(fig, filename='timetable.jpg'):
+    if fig is None:
+        st.error("❌ No figure to save.")
+        return
+    try:
+        img_bytes = fig.to_image(format='jpg')
+        return img_bytes
+    except Exception as e:
+        st.error(f"❌ Error saving image: {e}")
+        return None
+
+# Function to display download button in Streamlit
+def create_download_button(img_bytes, filename='timetable.jpg'):
+    if not img_bytes:
+        st.error("❌ No image to download.")
+        return
+    st.download_button(
+        label="📥 Download Timetable as JPG",
+        data=img_bytes,
+        file_name=filename,
+        mime="image/jpg",
+        key='download-button'
+    )
+
+# Function to set background image and determine text color
+def add_background_and_set_text_color(selected_background):
+    # Download the selected background image
+    try:
+        response = requests.get(selected_background)
+        response.raise_for_status()
+        img = Image.open(BytesIO(response.content))
+    except Exception as e:
+        st.error(f"❌ Failed to load background image: {e}")
+        return "#FFFFFF"  # Default to white if image fails
+
+    # Calculate the average brightness
+    avg_brightness = calculate_average_brightness(img)
+
+    # Determine text color based on brightness
+    text_color = "#000000" if avg_brightness > 127 else "#FFFFFF"
+
+    # Inject custom CSS to set the background image and adjust table-container
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("{selected_background}");
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }}
+        /* Table container with no padding or margin */
+        .table-container {{
+            overflow-x: auto;
+            padding: 0;
+            margin: 0;
         }}
         /* Responsive adjustments */
         @media only screen and (max-width: 600px) {{
@@ -575,14 +2297,14 @@ def main():
             if timetable_df is not None:
                 fig = visualize_timetable(timetable_df, color_scheme)
                 if fig:
-                    # Wrap the chart in a div with scroll for small devices
+                    # Wrap the chart and download button in the same container
                     st.markdown('<div class="table-container">', unsafe_allow_html=True)
                     st.plotly_chart(fig, use_container_width=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
                     if download:
                         img_bytes = save_timetable_as_image(fig)
                         if img_bytes:
                             create_download_button(img_bytes)
+                    st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.error("❌ Please enter a valid roll number.")
 
@@ -608,3 +2330,4 @@ def calculate_average_brightness(image):
 
 if __name__ == "__main__":
     main()
+
