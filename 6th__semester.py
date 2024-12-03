@@ -21,7 +21,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# Define all background images (including previously removed ones)
+# Define all background images (excluding images 9 and 10)
 background_images = [
     # Image 1
     {
@@ -30,12 +30,12 @@ background_images = [
     },
     # Image 2
     {
-        'description': 'Image 2 Description',  # Replace with actual description
+        'description': 'Classroom Environment',
         'url': "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1950&q=80"
     },
     # Image 3
     {
-        'description': 'Classroom or Lecture Hall',
+        'description': 'Lecture Hall Setup',
         'url': "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?auto=format&fit=crop&w=1950&q=80"
     },
     # Image 4
@@ -55,50 +55,10 @@ background_images = [
     },
     # Image 7
     {
-        'description': 'Image 7 Description',  # Replace with actual description
-        'url': "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1950&q=80"
-    },
-    # Image 8
-    {
-        'description': 'Organized Study Space',
-        'url': "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1950&q=80"
-    },
-    # Image 9
-    {
-        'description': 'Group Study Session',
-        'url': "https://images.unsplash.com/photo-1523161327430-70d78188ef0b?auto=format&fit=crop&w=1950&q=80"
-    },
-    # Image 10
-    {
-        'description': 'Inspirational Imagery',
-        'url': "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1950&q=80"
-    },
-    # Image 11
-    {
-        'description': 'Students Working Together',
-        'url': "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=1950&q=80"
-    },
-    # Image 12
-    {
-        'description': 'Image 12 Description',  # Replace with actual description
-        'url': "https://images.unsplash.com/photo-1523475496153-3b94f1c92c22?auto=format&fit=crop&w=1950&q=80"
-    },
-    # Image 13
-    {
-        'description': 'Quiet Library Study',
-        'url': "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1950&q=80"
-    },
-    # Image 14
-    {
-        'description': 'Image 14 Description',  # Replace with actual description
-        'url': "https://images.unsplash.com/photo-1529645685951-3f399d48f3c7?auto=format&fit=crop&w=1950&q=80"
-    },
-    # Image 15
-    {
         'description': 'Graduation Ceremony',
         'url': "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1950&q=80"
     },
-    # Image 16 - Taylor Swift
+    # Image 8 - Taylor Swift
     {
         'description': 'Taylor Swift MetLife Opening',
         'url': "https://www.rollingstone.com/wp-content/uploads/2023/05/taylor-swift-metlife-opening.jpg?w=1581&h=1054&crop=1"
@@ -108,213 +68,109 @@ background_images = [
 # Define multiple themes, each with a unique color scheme and associated background image
 themes = [
     {
-        'name': 'Turquoise',
+        'name': 'Motivational',
         'color_scheme': {
-            'header_fill': '#1abc9c',
+            'header_fill': '#FF5733',
             'header_text': '#ffffff',
-            'time_fill': '#16a085',
+            'time_fill': '#C70039',
             'time_text': '#ffffff',
-            'day_fill_1': '#ecf0f1',
-            'day_fill_2': '#bdc3c7',
-            'day_text': '#2c3e50',
+            'day_fill_1': '#FFC300',
+            'day_fill_2': '#FF5733',
+            'day_text': '#900C3F',
         },
         'background_image': background_images[0]['url']  # Image 1
     },
     {
-        'name': 'Alizarin',
+        'name': 'Academic',
         'color_scheme': {
-            'header_fill': '#e74c3c',
+            'header_fill': '#3498DB',
             'header_text': '#ffffff',
-            'time_fill': '#c0392b',
+            'time_fill': '#2980B9',
             'time_text': '#ffffff',
-            'day_fill_1': '#fdfefe',
-            'day_fill_2': '#dfe6e9',
-            'day_text': '#2d3436',
+            'day_fill_1': '#85C1E9',
+            'day_fill_2': '#2980B9',
+            'day_text': '#1A5276',
         },
         'background_image': background_images[1]['url']  # Image 2
     },
     {
-        'name': 'Wisteria',
+        'name': 'Lecture',
         'color_scheme': {
-            'header_fill': '#8e44ad',
+            'header_fill': '#8E44AD',
             'header_text': '#ffffff',
-            'time_fill': '#732d91',
+            'time_fill': '#732D91',
             'time_text': '#ffffff',
-            'day_fill_1': '#f5f6f4',
-            'day_fill_2': '#dcdde1',
-            'day_text': '#2c3e50',
+            'day_fill_1': '#D2B4DE',
+            'day_fill_2': '#8E44AD',
+            'day_text': '#5B2C6F',
         },
         'background_image': background_images[2]['url']  # Image 3
     },
     {
-        'name': 'Belize Hole',
+        'name': 'Study',
         'color_scheme': {
-            'header_fill': '#2980b9',
+            'header_fill': '#27AE60',
             'header_text': '#ffffff',
-            'time_fill': '#1f618d',
+            'time_fill': '#1E8449',
             'time_text': '#ffffff',
-            'day_fill_1': '#f0f3f4',
-            'day_fill_2': '#d1ccc0',
-            'day_text': '#2c3e50',
+            'day_fill_1': '#ABEBC6',
+            'day_fill_2': '#27AE60',
+            'day_text': '#145A32',
         },
         'background_image': background_images[3]['url']  # Image 4
     },
     {
-        'name': 'Green Sea',
+        'name': 'Collaboration',
         'color_scheme': {
-            'header_fill': '#27ae60',
+            'header_fill': '#F39C12',
             'header_text': '#ffffff',
-            'time_fill': '#1e8449',
+            'time_fill': '#D68910',
             'time_text': '#ffffff',
-            'day_fill_1': '#f8f9fa',
-            'day_fill_2': '#dfe6e9',
-            'day_text': '#2c3e50',
+            'day_fill_1': '#FDEBD0',
+            'day_fill_2': '#F5CBA7',
+            'day_text': '#A04000',
         },
         'background_image': background_images[4]['url']  # Image 5
     },
     {
-        'name': 'Sun Flower',
+        'name': 'Vibrant',
         'color_scheme': {
-            'header_fill': '#f1c40f',
+            'header_fill': '#E74C3C',
             'header_text': '#ffffff',
-            'time_fill': '#d4ac0d',
+            'time_fill': '#C0392B',
             'time_text': '#ffffff',
-            'day_fill_1': '#fefbd8',
-            'day_fill_2': '#fdebd0',
-            'day_text': '#641e16',
+            'day_fill_1': '#F1948A',
+            'day_fill_2': '#EC7063',
+            'day_text': '#641E16',
         },
         'background_image': background_images[5]['url']  # Image 6
     },
     {
-        'name': 'Pumpkin',
+        'name': 'Graduation',
         'color_scheme': {
-            'header_fill': '#d35400',
+            'header_fill': '#2ECC71',
             'header_text': '#ffffff',
-            'time_fill': '#c0392b',
+            'time_fill': '#27AE60',
             'time_text': '#ffffff',
-            'day_fill_1': '#fdebd0',
-            'day_fill_2': '#f5b041',
-            'day_text': '#1c2833',
+            'day_fill_1': '#A9DFBF',
+            'day_fill_2': '#2ECC71',
+            'day_text': '#145A32',
         },
         'background_image': background_images[6]['url']  # Image 7
     },
     {
-        'name': 'Emerald',
+        'name': 'Taylor Swift',
         'color_scheme': {
-            'header_fill': '#2ecc71',
+            'header_fill': '#FF69B4',  # Hot Pink
             'header_text': '#ffffff',
-            'time_fill': '#27ae60',
+            'time_fill': '#FF1493',     # Deep Pink
             'time_text': '#ffffff',
-            'day_fill_1': '#d1f2eb',
-            'day_fill_2': '#abebc6',
-            'day_text': '#17202a',
+            'day_fill_1': '#ffe4e1',    # Misty Rose
+            'day_fill_2': '#ffb6c1',    # Light Pink
+            'day_text': '#2c3e50',
         },
         'background_image': background_images[7]['url']  # Image 8
     },
-    {
-        'name': 'Amethyst',
-        'color_scheme': {
-            'header_fill': '#9b59b6',
-            'header_text': '#ffffff',
-            'time_fill': '#8e44ad',
-            'time_text': '#ffffff',
-            'day_fill_1': '#ebdef0',
-            'day_fill_2': '#d2b4de',
-            'day_text': '#17202a',
-        },
-        'background_image': background_images[8]['url']  # Image 9
-    },
-    {
-        'name': 'Midnight Blue',
-        'color_scheme': {
-            'header_fill': '#2c3e50',
-            'header_text': '#ffffff',
-            'time_fill': '#34495e',
-            'time_text': '#ffffff',
-            'day_fill_1': '#abb2b9',
-            'day_fill_2': '#839192',
-            'day_text': '#f5f6fa',
-        },
-        'background_image': background_images[9]['url']  # Image 10
-    },
-    {
-        'name': 'Carrot',
-        'color_scheme': {
-            'header_fill': '#e67e22',
-            'header_text': '#ffffff',
-            'time_fill': '#d35400',
-            'time_text': '#ffffff',
-            'day_fill_1': '#f5cba7',
-            'day_fill_2': '#edbb99',
-            'day_text': '#17202a',
-        },
-        'background_image': background_images[10]['url']  # Image 11
-    },
-    {
-        'name': 'Concrete',
-        'color_scheme': {
-            'header_fill': '#95a5a6',
-            'header_text': '#ffffff',
-            'time_fill': '#7f8c8d',
-            'time_text': '#ffffff',
-            'day_fill_1': '#d5dbdb',
-            'day_fill_2': '#aab7b8',
-            'day_text': '#17202a',
-        },
-        'background_image': background_images[11]['url']  # Image 12
-    },
-    {
-        'name': 'Almond',
-        'color_scheme': {
-            'header_fill': '#f8c471',
-            'header_text': '#ffffff',
-            'time_fill': '#f39c12',
-            'time_text': '#ffffff',
-            'day_fill_1': '#fdf2e9',
-            'day_fill_2': '#fad7a0',
-            'day_text': '#17202a',
-        },
-        'background_image': background_images[12]['url']  # Image 13
-    },
-    {
-        'name': 'Bitter Sweet',
-        'color_scheme': {
-            'header_fill': '#e74c3c',
-            'header_text': '#ffffff',
-            'time_fill': '#c0392b',
-            'time_text': '#ffffff',
-            'day_fill_1': '#f1948a',
-            'day_fill_2': '#ec7063',
-            'day_text': '#1c2833',
-        },
-        'background_image': background_images[13]['url']  # Image 14
-    },
-    {
-        'name': 'Silver',
-        'color_scheme': {
-            'header_fill': '#bdc3c7',
-            'header_text': '#ffffff',
-            'time_fill': '#95a5a6',
-            'time_text': '#ffffff',
-            'day_fill_1': '#d5dbdb',
-            'day_fill_2': '#aab7b8',
-            'day_text': '#17202a',
-        },
-        'background_image': background_images[14]['url']  # Image 15
-    },
-    {
-        'name': 'Navy',
-        'color_scheme': {
-            'header_fill': '#34495e',
-            'header_text': '#ffffff',
-            'time_fill': '#2c3e50',
-            'time_text': '#ffffff',
-            'day_fill_1': '#839192',
-            'day_fill_2': '#1abc9c',
-            'day_text': '#f5f6fa',
-        },
-        'background_image': background_images[15]['url']  # Image 16 - Taylor Swift
-    }
 ]
 
 # Function to randomly select a theme
@@ -340,8 +196,8 @@ def calculate_average_brightness(image):
     avg_brightness = sum(pixels) / len(pixels)
     return avg_brightness
 
-# Function to add background and determine title text color
-def add_background_and_set_title_color(selected_background):
+# Function to add background and determine text color
+def add_background_and_set_text_color(selected_background):
     # Download the selected background image
     try:
         response = requests.get(selected_background)
@@ -375,8 +231,8 @@ def add_background_and_set_title_color(selected_background):
 
     return text_color
 
-# Set the background image and get title text color
-title_text_color = add_background_and_set_title_color(background_image)
+# Set the background image and get text color
+text_color = add_background_and_set_text_color(background_image)
 
 # Function to load data from GitHub
 @st.cache_data
@@ -584,24 +440,33 @@ def create_download_button(img_bytes, filename='timetable.jpg'):
         key='download-button'
     )
 
+# Function to set background image and determine text color
+text_color = add_background_and_set_text_color(background_image)
+
 # Main Streamlit App
 def main():
     # Display the dynamic title with determined text color
     st.markdown(
-        f"<h1 style='text-align: center; color: {title_text_color};'>🎓 Student Timetable Viewer</h1>",
+        f"<h1 style='text-align: center; color: {text_color};'>🎓 Student Timetable Viewer</h1>",
         unsafe_allow_html=True
     )
 
-    # User input for Roll Number
-    roll_number = st.text_input("Enter Your Roll Number", max_chars=10)
+    # Display the "Enter Your Roll Number" label as bold and colored
+    st.markdown(
+        f"<h3 style='text-align: center; color: {text_color};'><b>Enter Your Roll Number</b></h3>",
+        unsafe_allow_html=True
+    )
+
+    # User input for Roll Number without a label
+    roll_number = st.text_input("", max_chars=10, key='roll_number_input')
 
     # Checkbox for downloading timetable as JPG
     download = st.checkbox("📥 Download timetable as JPG image")
 
     # Button to generate timetable
     if st.button("🔍 Generate Timetable"):
-        if roll_number:
-            timetable_df = generate_timetable_df(roll_number)
+        if roll_number.strip():
+            timetable_df = generate_timetable_df(roll_number.strip())
             if timetable_df is not None:
                 fig = visualize_timetable(timetable_df)
                 if fig:
