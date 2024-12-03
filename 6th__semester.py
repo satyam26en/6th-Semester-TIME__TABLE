@@ -9,11 +9,16 @@ Original file is located at
 
 # app.py
 
+# app.py
+
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.io as pio
 import random
+from io import BytesIO
+from PIL import Image
+import requests
 from io import BytesIO
 
 # Set Streamlit page configuration
@@ -23,8 +28,8 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Function to add a randomly selected background image
-def add_random_background():
+# Function to add a randomly selected background image and determine title text color
+def add_random_background_and_determine_title_color():
     # List of background image URLs (Ensure these images are publicly accessible)
     background_images = [
         "https://images.unsplash.com/photo-1517430816045-df4b7de11d1c?auto=format&fit=crop&w=1950&q=80",  # Image 1
@@ -36,6 +41,33 @@ def add_random_background():
 
     # Select a random background image
     selected_background = random.choice(background_images)
+
+    # Download the selected background image
+    try:
+        response = requests.get(selected_background)
+        response.raise_for_status()
+        img = Image.open(BytesIO(response.content))
+    except Exception as e:
+        st.error(f"❌ Failed to load background image: {e}")
+        return "#FFFFFF"  # Default to white if image fails
+
+    # Calculate the average brightness of the image
+    def calculate_average_brightness(image):
+        # Convert image to grayscale
+        grayscale_image = image.convert("L")
+        # Resize image to reduce computation (optional)
+        grayscale_image = grayscale_image.resize((100, 100))
+        # Get pixel data
+        pixels = list(grayscale_image.getdata())
+        # Calculate average brightness
+        avg_brightness = sum(pixels) / len(pixels)
+        return avg_brightness
+
+    avg_brightness = calculate_average_brightness(img)
+
+    # Determine text color based on brightness
+    # Threshold can be adjusted as needed
+    text_color = "#000000" if avg_brightness > 127 else "#FFFFFF"
 
     # Inject custom CSS to set the background image
     st.markdown(
@@ -58,8 +90,10 @@ def add_random_background():
         unsafe_allow_html=True
     )
 
-# Call the function to set a random background
-add_random_background()
+    return text_color
+
+# Call the function to set a random background and get title text color
+title_text_color = add_random_background_and_determine_title_color()
 
 # Sidebar for theme selection
 st.sidebar.title("🎨 Theme Selection")
@@ -247,17 +281,13 @@ def generate_timetable_df(roll_number):
 
     return timetable_matrix
 
-# Function to visualize the timetable using Plotly with selected color schemes and random background
+# Function to visualize the timetable using Plotly with selected color schemes
 def visualize_timetable(timetable_matrix):
     if timetable_matrix is None:
         return None
 
     # Create bold Time column by wrapping with <b> tags
     bold_time_slots = [f"<b>{time}</b>" for time in timetable_matrix.index]
-
-    # Define the background image URL (Optional: Additional random background per plot)
-    # You can implement an additional random selection here if desired
-    # For simplicity, we use the already set background from CSS
 
     # Create the table
     fig = go.Figure(data=[go.Table(
@@ -340,11 +370,20 @@ def create_download_button(img_bytes, filename='timetable.jpg'):
 
 # Main Streamlit App
 def main():
-    st.title("🎓 Student Timetable Viewer")
+    # Display the dynamic title with determined text color
+    st.markdown(
+        f"<h1 style='text-align: center; color: {title_text_color};'>🎓 Student Timetable Viewer</h1>",
+        unsafe_allow_html=True
+    )
 
-    # Display Taylor Swift logo or image at the top (optional)
-    # Replace the URL below with your desired image URL or comment out if not needed
-    
+    # Display KIIT Full Logo at the top (optional)
+    # Replace the URL below with your direct image URL
+    logo_image_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/KIIT-Full-Logo-Center.png'  # Your direct image URL
+    try:
+        st.image(logo_image_url, width=600)
+    except Exception as e:
+        st.warning("⚠️ Unable to load the logo/image. Please check the URL.")
+
     # User input for Roll Number
     roll_number = st.text_input("Enter Your Roll Number", max_chars=10)
 
