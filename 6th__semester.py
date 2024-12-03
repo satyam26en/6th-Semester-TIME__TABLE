@@ -344,7 +344,7 @@ def main():
 
     # Display Taylor Swift logo or image at the top (optional)
     # Replace the URL below with your desired image URL or comment out if not needed
-    logo_image_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/KIIT-Full-Logo-Center.png'  L
+    logo_image_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/KIIT-Full-Logo-Center.png'  
     try:
         st.image(logo_image_url, width=600)
     except Exception as e:
