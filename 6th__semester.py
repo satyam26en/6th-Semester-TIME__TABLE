@@ -177,8 +177,15 @@ themes = [
 def select_theme():
     st.sidebar.title("🎨 Theme Selection")
     theme_names = [theme['name'] for theme in themes]
-    selected_theme_name = st.sidebar.selectbox("Choose a Theme", theme_names, index=random.randint(0, len(themes)-1))
-    selected_theme = next((theme for theme in themes if theme['name'] == selected_theme_name), themes[0])
+    selected_theme_name = st.sidebar.selectbox(
+        "Choose a Theme",
+        theme_names,
+        index=random.randint(0, len(themes)-1)
+    )
+    selected_theme = next(
+        (theme for theme in themes if theme['name'] == selected_theme_name),
+        themes[0]
+    )
     return selected_theme
 
 # Function to calculate average brightness
@@ -254,7 +261,7 @@ def load_data(url, fallback_path=None):
 # Function to validate dataframe
 def validate_dataframe(df, expected_columns):
     if not all(column in df.columns for column in expected_columns):
-        st.error("❌ Dataframe is missing expected columns.")
+        st.error(f"❌ Dataframe is missing expected columns: {expected_columns}")
         return False
     return True
 
@@ -269,10 +276,14 @@ elective_df = load_data(elective_url, fallback_path='data/elective.csv')
 core_df = load_data(core_url, fallback_path='data/core.csv')
 
 # Validate dataframes
+required_section_columns = ['Roll No.', 'Core Section', 'Professional Elective 1', 'Professional Elective 2']
+required_elective_columns = ['DAY', 'ROOM1', 'TIME1', 'SUBJECT1']  # Adjust based on actual CSV structure
+required_core_columns = ['DAY', 'ROOM', 'TIME', 'SUBJECT']        # Adjust based on actual CSV structure
+
 if not all([
-    section_df is not None and validate_dataframe(section_df, ['Roll No.', 'Core Section', 'Professional Elective 1', 'Professional Elective 2']),
-    elective_df is not None and validate_dataframe(elective_df, ['DAY', 'ROOM1', 'TIME1', 'SUBJECT1']),  # Update expected columns accordingly
-    core_df is not None and validate_dataframe(core_df, ['DAY', 'ROOM', 'TIME', 'SUBJECT'])  # Update expected columns accordingly
+    section_df is not None and validate_dataframe(section_df, required_section_columns),
+    elective_df is not None and validate_dataframe(elective_df, required_elective_columns),
+    core_df is not None and validate_dataframe(core_df, required_core_columns)
 ]):
     st.stop()
 
@@ -331,8 +342,9 @@ def generate_timetable_df(roll_number):
                 if row[col] != '---':
                     # Assuming the time slot is in the corresponding TIME column
                     time_col = col.replace('ROOM', 'TIME')
+                    subject_col = col.replace('ROOM', 'SUBJECT')
                     time_slot = standardize_time_slot(row.get(time_col, ''))
-                    subject = row.get(col.replace('ROOM', 'SUBJECT'), 'N/A')
+                    subject = row.get(subject_col, 'N/A')
                     room_number = row[col]
                     if isinstance(subject, str) and subject.lower() != 'x' and time_slot in times:
                         # Append to existing entry if there's a conflict
@@ -546,4 +558,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
