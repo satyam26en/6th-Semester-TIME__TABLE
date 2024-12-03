@@ -283,10 +283,8 @@ def standardize_time_slot(time_slot):
         '10 TO 11': '10 TO 11',
         '11 TO 12': '11 TO 12',
         '12 TO 1': '12 TO 1',
-        '1 TO 2': '1 TO 2',
-        '2 TO 3': '2 TO 3',
-        '3 TO 4': '3 TO 4',
-        '4 TO 5': '4 TO 5'
+        '1 TO 2': '1 TO 2'
+        
     }
     # Remove extra spaces in the time slot string to match the mapping
     standardized_slot = ' '.join(time_slot.upper().split())
