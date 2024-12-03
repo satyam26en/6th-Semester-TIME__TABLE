@@ -9,10 +9,10 @@ Original file is located at
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import random
 from io import BytesIO
 from PIL import Image
 import requests
-import random
 
 # Set Streamlit page configuration
 st.set_page_config(
@@ -21,19 +21,312 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# Taylor Swift Background Image (Image 16)
-taylor_swift_background = "https://www.rollingstone.com/wp-content/uploads/2023/05/taylor-swift-metlife-opening.jpg?w=1581&h=1054&crop=1"
+# Define all background images (including previously removed ones)
+background_images = [
+    # Image 1
+    {
+        'description': 'Motivational Quote',
+        'url': "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1950&q=80"
+    },
+    # Image 2
+    {
+        'description': 'Image 2 Description',  # Replace with actual description
+        'url': "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1950&q=80"
+    },
+    # Image 3
+    {
+        'description': 'Classroom or Lecture Hall',
+        'url': "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?auto=format&fit=crop&w=1950&q=80"
+    },
+    # Image 4
+    {
+        'description': 'Motivational Study Setup',
+        'url': "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1950&q=80"
+    },
+    # Image 5
+    {
+        'description': 'Students Collaborating',
+        'url': "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=1950&q=80"
+    },
+    # Image 6
+    {
+        'description': 'Vibrant Student Life',
+        'url': "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1950&q=80"
+    },
+    # Image 7
+    {
+        'description': 'Image 7 Description',  # Replace with actual description
+        'url': "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1950&q=80"
+    },
+    # Image 8
+    {
+        'description': 'Organized Study Space',
+        'url': "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1950&q=80"
+    },
+    # Image 9
+    {
+        'description': 'Group Study Session',
+        'url': "https://images.unsplash.com/photo-1523161327430-70d78188ef0b?auto=format&fit=crop&w=1950&q=80"
+    },
+    # Image 10
+    {
+        'description': 'Inspirational Imagery',
+        'url': "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1950&q=80"
+    },
+    # Image 11
+    {
+        'description': 'Students Working Together',
+        'url': "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=1950&q=80"
+    },
+    # Image 12
+    {
+        'description': 'Image 12 Description',  # Replace with actual description
+        'url': "https://images.unsplash.com/photo-1523475496153-3b94f1c92c22?auto=format&fit=crop&w=1950&q=80"
+    },
+    # Image 13
+    {
+        'description': 'Quiet Library Study',
+        'url': "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1950&q=80"
+    },
+    # Image 14
+    {
+        'description': 'Image 14 Description',  # Replace with actual description
+        'url': "https://images.unsplash.com/photo-1529645685951-3f399d48f3c7?auto=format&fit=crop&w=1950&q=80"
+    },
+    # Image 15
+    {
+        'description': 'Graduation Ceremony',
+        'url': "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1950&q=80"
+    },
+    # Image 16 - Taylor Swift
+    {
+        'description': 'Taylor Swift MetLife Opening',
+        'url': "https://www.rollingstone.com/wp-content/uploads/2023/05/taylor-swift-metlife-opening.jpg?w=1581&h=1054&crop=1"
+    }
+]
 
-# Define the fixed "Taylor Swift" color scheme
-fixed_color_scheme = {
-    'header_fill': '#FF69B4',    # Hot Pink
-    'header_text': '#ffffff',    # White
-    'time_fill': '#FF1493',      # Deep Pink
-    'time_text': '#ffffff',      # White
-    'day_fill_1': '#ffe4e1',     # Misty Rose
-    'day_fill_2': '#ffb6c1',     # Light Pink
-    'day_text': '#2c3e50',       # Dark Blue
-}
+# Define multiple themes, each with a unique color scheme and associated background image
+themes = [
+    {
+        'name': 'Turquoise',
+        'color_scheme': {
+            'header_fill': '#1abc9c',
+            'header_text': '#ffffff',
+            'time_fill': '#16a085',
+            'time_text': '#ffffff',
+            'day_fill_1': '#ecf0f1',
+            'day_fill_2': '#bdc3c7',
+            'day_text': '#2c3e50',
+        },
+        'background_image': background_images[0]['url']  # Image 1
+    },
+    {
+        'name': 'Alizarin',
+        'color_scheme': {
+            'header_fill': '#e74c3c',
+            'header_text': '#ffffff',
+            'time_fill': '#c0392b',
+            'time_text': '#ffffff',
+            'day_fill_1': '#fdfefe',
+            'day_fill_2': '#dfe6e9',
+            'day_text': '#2d3436',
+        },
+        'background_image': background_images[1]['url']  # Image 2
+    },
+    {
+        'name': 'Wisteria',
+        'color_scheme': {
+            'header_fill': '#8e44ad',
+            'header_text': '#ffffff',
+            'time_fill': '#732d91',
+            'time_text': '#ffffff',
+            'day_fill_1': '#f5f6f4',
+            'day_fill_2': '#dcdde1',
+            'day_text': '#2c3e50',
+        },
+        'background_image': background_images[2]['url']  # Image 3
+    },
+    {
+        'name': 'Belize Hole',
+        'color_scheme': {
+            'header_fill': '#2980b9',
+            'header_text': '#ffffff',
+            'time_fill': '#1f618d',
+            'time_text': '#ffffff',
+            'day_fill_1': '#f0f3f4',
+            'day_fill_2': '#d1ccc0',
+            'day_text': '#2c3e50',
+        },
+        'background_image': background_images[3]['url']  # Image 4
+    },
+    {
+        'name': 'Green Sea',
+        'color_scheme': {
+            'header_fill': '#27ae60',
+            'header_text': '#ffffff',
+            'time_fill': '#1e8449',
+            'time_text': '#ffffff',
+            'day_fill_1': '#f8f9fa',
+            'day_fill_2': '#dfe6e9',
+            'day_text': '#2c3e50',
+        },
+        'background_image': background_images[4]['url']  # Image 5
+    },
+    {
+        'name': 'Sun Flower',
+        'color_scheme': {
+            'header_fill': '#f1c40f',
+            'header_text': '#ffffff',
+            'time_fill': '#d4ac0d',
+            'time_text': '#ffffff',
+            'day_fill_1': '#fefbd8',
+            'day_fill_2': '#fdebd0',
+            'day_text': '#641e16',
+        },
+        'background_image': background_images[5]['url']  # Image 6
+    },
+    {
+        'name': 'Pumpkin',
+        'color_scheme': {
+            'header_fill': '#d35400',
+            'header_text': '#ffffff',
+            'time_fill': '#c0392b',
+            'time_text': '#ffffff',
+            'day_fill_1': '#fdebd0',
+            'day_fill_2': '#f5b041',
+            'day_text': '#1c2833',
+        },
+        'background_image': background_images[6]['url']  # Image 7
+    },
+    {
+        'name': 'Emerald',
+        'color_scheme': {
+            'header_fill': '#2ecc71',
+            'header_text': '#ffffff',
+            'time_fill': '#27ae60',
+            'time_text': '#ffffff',
+            'day_fill_1': '#d1f2eb',
+            'day_fill_2': '#abebc6',
+            'day_text': '#17202a',
+        },
+        'background_image': background_images[7]['url']  # Image 8
+    },
+    {
+        'name': 'Amethyst',
+        'color_scheme': {
+            'header_fill': '#9b59b6',
+            'header_text': '#ffffff',
+            'time_fill': '#8e44ad',
+            'time_text': '#ffffff',
+            'day_fill_1': '#ebdef0',
+            'day_fill_2': '#d2b4de',
+            'day_text': '#17202a',
+        },
+        'background_image': background_images[8]['url']  # Image 9
+    },
+    {
+        'name': 'Midnight Blue',
+        'color_scheme': {
+            'header_fill': '#2c3e50',
+            'header_text': '#ffffff',
+            'time_fill': '#34495e',
+            'time_text': '#ffffff',
+            'day_fill_1': '#abb2b9',
+            'day_fill_2': '#839192',
+            'day_text': '#f5f6fa',
+        },
+        'background_image': background_images[9]['url']  # Image 10
+    },
+    {
+        'name': 'Carrot',
+        'color_scheme': {
+            'header_fill': '#e67e22',
+            'header_text': '#ffffff',
+            'time_fill': '#d35400',
+            'time_text': '#ffffff',
+            'day_fill_1': '#f5cba7',
+            'day_fill_2': '#edbb99',
+            'day_text': '#17202a',
+        },
+        'background_image': background_images[10]['url']  # Image 11
+    },
+    {
+        'name': 'Concrete',
+        'color_scheme': {
+            'header_fill': '#95a5a6',
+            'header_text': '#ffffff',
+            'time_fill': '#7f8c8d',
+            'time_text': '#ffffff',
+            'day_fill_1': '#d5dbdb',
+            'day_fill_2': '#aab7b8',
+            'day_text': '#17202a',
+        },
+        'background_image': background_images[11]['url']  # Image 12
+    },
+    {
+        'name': 'Almond',
+        'color_scheme': {
+            'header_fill': '#f8c471',
+            'header_text': '#ffffff',
+            'time_fill': '#f39c12',
+            'time_text': '#ffffff',
+            'day_fill_1': '#fdf2e9',
+            'day_fill_2': '#fad7a0',
+            'day_text': '#17202a',
+        },
+        'background_image': background_images[12]['url']  # Image 13
+    },
+    {
+        'name': 'Bitter Sweet',
+        'color_scheme': {
+            'header_fill': '#e74c3c',
+            'header_text': '#ffffff',
+            'time_fill': '#c0392b',
+            'time_text': '#ffffff',
+            'day_fill_1': '#f1948a',
+            'day_fill_2': '#ec7063',
+            'day_text': '#1c2833',
+        },
+        'background_image': background_images[13]['url']  # Image 14
+    },
+    {
+        'name': 'Silver',
+        'color_scheme': {
+            'header_fill': '#bdc3c7',
+            'header_text': '#ffffff',
+            'time_fill': '#95a5a6',
+            'time_text': '#ffffff',
+            'day_fill_1': '#d5dbdb',
+            'day_fill_2': '#aab7b8',
+            'day_text': '#17202a',
+        },
+        'background_image': background_images[14]['url']  # Image 15
+    },
+    {
+        'name': 'Navy',
+        'color_scheme': {
+            'header_fill': '#34495e',
+            'header_text': '#ffffff',
+            'time_fill': '#2c3e50',
+            'time_text': '#ffffff',
+            'day_fill_1': '#839192',
+            'day_fill_2': '#1abc9c',
+            'day_text': '#f5f6fa',
+        },
+        'background_image': background_images[15]['url']  # Image 16 - Taylor Swift
+    }
+]
+
+# Function to randomly select a theme
+def select_random_theme(themes_list):
+    return random.choice(themes_list)
+
+# Select a random theme
+selected_theme = select_random_theme(themes)
+
+# Extract color scheme and background image from the selected theme
+color_scheme = selected_theme['color_scheme']
+background_image = selected_theme['background_image']
 
 # Function to calculate average brightness
 def calculate_average_brightness(image):
@@ -82,6 +375,9 @@ def add_background_and_set_title_color(selected_background):
 
     return text_color
 
+# Set the background image and get title text color
+title_text_color = add_background_and_set_title_color(background_image)
+
 # Function to load data from GitHub
 @st.cache_data
 def load_data(url):
@@ -89,7 +385,7 @@ def load_data(url):
         df = pd.read_csv(url)
         return df
     except Exception as e:
-        st.error(f"Error loading data from {url}: {e}")
+        st.error(f"❌ Error loading data from {url}: {e}")
         return None
 
 # URLs of the CSV files (Ensure these URLs are correct and publicly accessible)
@@ -201,7 +497,7 @@ def generate_timetable_df(roll_number):
 
     return timetable_matrix
 
-# Function to visualize the timetable using Plotly with fixed color scheme
+# Function to visualize the timetable using Plotly with selected color schemes
 def visualize_timetable(timetable_matrix):
     if timetable_matrix is None:
         return None
@@ -214,18 +510,18 @@ def visualize_timetable(timetable_matrix):
         columnwidth = [100] + [120]*6,
         header=dict(
             values=['<b>TIME</b>'] + [f'<b>{day.upper()}</b>' for day in days],  # Days in uppercase
-            fill_color=fixed_color_scheme['header_fill'],
+            fill_color=color_scheme['header_fill'],
             align='center',
-            font=dict(color=fixed_color_scheme['header_text'], size=14, family='Arial Black'),
+            font=dict(color=color_scheme['header_text'], size=14, family='Arial Black'),
             height=50
         ),
         cells=dict(
             values=[bold_time_slots] + [timetable_matrix[day].tolist() for day in days],
             fill=dict(
                 color=[
-                    [fixed_color_scheme['time_fill']] * len(times),  # Time column with fixed fill color
+                    [color_scheme['time_fill']] * len(times),  # Time column with selected fill color
                     *[
-                        [fixed_color_scheme['day_fill_1']] * len(times) if i % 2 == 0 else [fixed_color_scheme['day_fill_2']] * len(times)
+                        [color_scheme['day_fill_1']] * len(times) if i % 2 == 0 else [color_scheme['day_fill_2']] * len(times)
                         for i in range(len(days))
                     ]
                 ]
@@ -233,9 +529,9 @@ def visualize_timetable(timetable_matrix):
             align='center',
             font=dict(
                 color=[
-                    fixed_color_scheme['time_text']
+                    color_scheme['time_text']
                 ] + [
-                    [fixed_color_scheme['day_text']] * len(times) for _ in days
+                    [color_scheme['day_text']] * len(times) for _ in days
                 ],
                 size=12,
                 family='Arial'
@@ -287,10 +583,6 @@ def create_download_button(img_bytes, filename='timetable.jpg'):
         mime="image/jpg",
         key='download-button'
     )
-
-# Function to set background image and determine title text color
-selected_background = taylor_swift_background  # Fixed background
-title_text_color = add_background_and_set_title_color(selected_background)
 
 # Main Streamlit App
 def main():
