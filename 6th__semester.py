@@ -74,150 +74,111 @@ themes = [
             'header_text': 'white',
             'time_fill': '#16a085',        # Dark Turquoise
             'time_text': 'white',
-             'day_fill_1': '#ecf0f1',       # Light Grey
-             'day_fill_2': '#bdc3c7',       # Silver
-             'day_text': '#2c3e50'          # Midnight Blue
+            'day_fill_1': '#ecf0f1',       # Light Grey
+            'day_fill_2': '#bdc3c7',       # Silver
+            'day_text': '#2c3e50'          # Midnight Blue
         },
         'background_image': background_images[0]['url']  # Image 1
     },
     {
         'name': 'Academic',
         'color_scheme': {
-          'header_fill': '#e74c3c',      # Alizarin
-          'header_text': 'white',
-          'time_fill': '#c0392b',        # Pomegranate
-          'time_text': 'white',
-          'day_fill_1': '#fdfefe',       # Snow
-          'day_fill_2': '#dfe6e9',       # Light Blue Grey
-          'day_text': '#2d3436'          # Dark Grey
+            'header_fill': '#e74c3c',      # Alizarin
+            'header_text': 'white',
+            'time_fill': '#c0392b',        # Pomegranate
+            'time_text': 'white',
+            'day_fill_1': '#fdfefe',       # Snow
+            'day_fill_2': '#dfe6e9',       # Light Blue Grey
+            'day_text': '#2d3436'          # Dark Grey
         },
         'background_image': background_images[1]['url']  # Image 2
     },
     {
         'name': 'Lecture',
         'color_scheme': {
-            'header_fill': '#8E44AD',
-            'header_text': '#ffffff',
-            'time_fill': '#732D91',
-            'time_text': '#ffffff',
-            'day_fill_1': '#D2B4DE',
-            'day_fill_2': '#8E44AD',
-            'day_text': '#5B2C6F',
+            'header_fill': '#8E44AD',      # Wisteria
+            'header_text': 'white',
+            'time_fill': '#732D91',        # Purple Heart
+            'time_text': 'white',
+            'day_fill_1': '#f5f6f4',       # Platinum
+            'day_fill_2': '#dcdde1',       # Light Grey
+            'day_text': '#2c3e50'          # Midnight Blue
         },
         'background_image': background_images[2]['url']  # Image 3
     },
     {
         'name': 'Study',
         'color_scheme': {
-            'header_fill': '#27AE60',
-            'header_text': '#ffffff',
-            'time_fill': '#1E8449',
-            'time_text': '#ffffff',
-            'day_fill_1': '#ABEBC6',
-            'day_fill_2': '#27AE60',
-            'day_text': '#145A32',
+            'header_fill': '#27AE60',      # Green Sea
+            'header_text': 'white',
+            'time_fill': '#1e8449',        # Dark Green
+            'time_text': 'white',
+            'day_fill_1': '#f8f9fa',       # Ghost White
+            'day_fill_2': '#dfe6e9',       # Light Blue Grey
+            'day_text': '#2c3e50'          # Midnight Blue
         },
         'background_image': background_images[3]['url']  # Image 4
     },
     {
         'name': 'Collaboration',
         'color_scheme': {
-            'header_fill': '#F39C12',
-            'header_text': '#ffffff',
-            'time_fill': '#D68910',
-            'time_text': '#ffffff',
-            'day_fill_1': '#FDEBD0',
-            'day_fill_2': '#F5CBA7',
-            'day_text': '#A04000',
+            'header_fill': '#F39C12',      # Vibrant Orange
+            'header_text': 'white',
+            'time_fill': '#D68910',        # Darker Orange
+            'time_text': 'white',
+            'day_fill_1': '#FDEBD0',       # Light Beige
+            'day_fill_2': '#F5CBA7',       # Light Pink
+            'day_text': '#A04000'          # Dark Orange
         },
         'background_image': background_images[4]['url']  # Image 5
     },
     {
         'name': 'Vibrant',
         'color_scheme': {
-            'header_fill': '#E74C3C',
-            'header_text': '#ffffff',
-            'time_fill': '#C0392B',
-            'time_text': '#ffffff',
-            'day_fill_1': '#F1948A',
-            'day_fill_2': '#EC7063',
-            'day_text': '#641E16',
+            'header_fill': '#E74C3C',      # Alizarin Red
+            'header_text': 'white',
+            'time_fill': '#C0392B',        # Pomegranate
+            'time_text': 'white',
+            'day_fill_1': '#F1948A',       # Light Coral
+            'day_fill_2': '#EC7063',       # Salmon
+            'day_text': '#641E16'          # Dark Maroon
         },
         'background_image': background_images[5]['url']  # Image 6
     },
     {
         'name': 'Graduation',
         'color_scheme': {
-            'header_fill': '#2ECC71',
-            'header_text': '#ffffff',
-            'time_fill': '#27AE60',
-            'time_text': '#ffffff',
-            'day_fill_1': '#A9DFBF',
-            'day_fill_2': '#2ECC71',
-            'day_text': '#145A32',
+            'header_fill': '#2ECC71',      # Emerald Green
+            'header_text': 'white',
+            'time_fill': '#27AE60',        # Darker Green
+            'time_text': 'white',
+            'day_fill_1': '#A9DFBF',       # Light Mint
+            'day_fill_2': '#2ECC71',       # Emerald Green
+            'day_text': '#145A32'          # Dark Green
         },
         'background_image': background_images[6]['url']  # Image 7
     },
     {
         'name': 'Taylor Swift',
         'color_scheme': {
-            'header_fill': '#FF69B4',  # Hot Pink
-            'header_text': '#ffffff',
-            'time_fill': '#FF1493',     # Deep Pink
-            'time_text': '#ffffff',
-            'day_fill_1': '#ffe4e1',    # Misty Rose
-            'day_fill_2': '#ffb6c1',    # Light Pink
-            'day_text': '#2c3e50',
+            'header_fill': '#FF69B4',      # Hot Pink
+            'header_text': 'white',
+            'time_fill': '#FF1493',        # Deep Pink
+            'time_text': 'white',
+            'day_fill_1': '#ffe4e1',       # Misty Rose
+            'day_fill_2': '#ffb6c1',       # Light Pink
+            'day_text': '#2c3e50'          # Midnight Blue
         },
         'background_image': background_images[7]['url']  # Image 8
-    },
-     {
-        'header_fill': '#8e44ad',      # Wisteria
-        'header_text': 'white',
-        'time_fill': '#732d91',        # Purple Heart
-        'time_text': 'white',
-        'day_fill_1': '#f5f6f4',       # Platinum
-        'day_fill_2': '#dcdde1',       # Light Grey
-        'day_text': '#2c3e50'          # Midnight Blue
-    },
-      'background_image': background_images[7]['url']  # Image 8
-    {
-        'header_fill': '#2980b9',      # Belize Hole
-        'header_text': 'white',
-        'time_fill': '#1f618d',        # Blue Dianne
-        'time_text': 'white',
-        'day_fill_1': '#f0f3f4',       # Platinum
-        'day_fill_2': '#dcdde1',       # Light Grey
-        'day_text': '#2c3e50'          # Midnight Blue
-    },
-       'background_image': background_images[6]['url']  # Image 7
-    {
-        'header_fill': '#27ae60',      # Green Sea
-        'header_text': 'white',
-        'time_fill': '#1e8449',        # Dark Green
-        'time_text': 'white',
-        'day_fill_1': '#f8f9fa',       # Ghost White
-        'day_fill_2': '#dfe6e9',       # Light Blue Grey
-        'day_text': '#2c3e50'          # Midnight Blue
-    },
-        'background_image': background_images[4]['url']
-    {
-        'header_fill': '#FFB6C1',      # Soft Pastel Pink (Aesthetic Theme)
-        'header_text': '#36454F',      # Charcoal
-        'time_fill': '#E6E6FA',        # Soft Lavender
-        'time_text': '#36454F',        # Charcoal
-        'day_fill_1': '#FFFFF0',       # Ivory
-        'day_fill_2': '#D3D3D3',       # Light Gray
-        'day_text': '#36454F'          # Charcoal
-    },
-    'background_image': background_images[2]['url']
+    }
 ]
 
-# Function to randomly select a theme
+# Function to randomly select a theme (if needed)
 def select_random_theme(themes_list):
     return random.choice(themes_list)
 
-# Select a random theme
+# Optionally, you can allow users to select themes instead of random selection
+# For now, we'll proceed with a random theme
 selected_theme = select_random_theme(themes)
 
 # Extract color scheme and background image from the selected theme
@@ -394,7 +355,7 @@ def generate_timetable_df(roll_number):
     return timetable_matrix
 
 # Function to visualize the timetable using Plotly with selected color schemes
-def visualize_timetable(timetable_matrix):
+def visualize_timetable(timetable_matrix, color_scheme):
     if timetable_matrix is None:
         return None
 
@@ -481,6 +442,41 @@ def create_download_button(img_bytes, filename='timetable.jpg'):
     )
 
 # Function to set background image and determine text color
+def add_background_and_set_text_color(selected_background):
+    # Download the selected background image
+    try:
+        response = requests.get(selected_background)
+        response.raise_for_status()
+        img = Image.open(BytesIO(response.content))
+    except Exception as e:
+        st.error(f"❌ Failed to load background image: {e}")
+        return "#FFFFFF"  # Default to white if image fails
+
+    # Calculate the average brightness
+    avg_brightness = calculate_average_brightness(img)
+
+    # Determine text color based on brightness
+    text_color = "#000000" if avg_brightness > 127 else "#FFFFFF"
+
+    # Inject custom CSS to set the background image
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("{selected_background}");
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    return text_color
+
+# Set the background image and get text color
 text_color = add_background_and_set_text_color(background_image)
 
 # Main Streamlit App
@@ -508,7 +504,7 @@ def main():
         if roll_number.strip():
             timetable_df = generate_timetable_df(roll_number.strip())
             if timetable_df is not None:
-                fig = visualize_timetable(timetable_df)
+                fig = visualize_timetable(timetable_df, color_scheme)
                 if fig:
                     st.plotly_chart(fig, use_container_width=True)
                     if download:
