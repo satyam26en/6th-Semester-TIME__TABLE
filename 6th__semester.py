@@ -14,12 +14,10 @@ Original file is located at
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-import plotly.io as pio
 import random
 from io import BytesIO
 from PIL import Image
 import requests
-from io import BytesIO
 
 # Set Streamlit page configuration
 st.set_page_config(
@@ -32,11 +30,16 @@ st.set_page_config(
 def add_random_background_and_determine_title_color():
     # List of background image URLs (Ensure these images are publicly accessible)
     background_images = [
-        "https://images.unsplash.com/photo-1517430816045-df4b7de11d1c?auto=format&fit=crop&w=1950&q=80",  # Image 1
+        # Removed the first image as per user request
         "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1950&q=80",  # Image 2
         "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?auto=format&fit=crop&w=1950&q=80",  # Image 3
         "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1950&q=80",  # Image 4
         "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=1950&q=80",  # Image 5
+        # Added more images including Taylor Swift-themed, motivational, and student life images
+        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1950&q=80",  # Motivational Quote
+        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1950&q=80",  # Student Life
+        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1950&q=80",  # Taylor Swift Themed (e.g., concert-like image)
+        "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1950&q=80",  # Study Environment
     ]
 
     # Select a random background image
@@ -376,13 +379,7 @@ def main():
         unsafe_allow_html=True
     )
 
-    # Display KIIT Full Logo at the top (optional)
-    # Replace the URL below with your direct image URL
-    logo_image_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/KIIT-Full-Logo-Center.png'  # Your direct image URL
-    try:
-        st.image(logo_image_url, width=600)
-    except Exception as e:
-        st.warning("⚠️ Unable to load the logo/image. Please check the URL.")
+    # Remove the logo section as per user request
 
     # User input for Roll Number
     roll_number = st.text_input("Enter Your Roll Number", max_chars=10)
