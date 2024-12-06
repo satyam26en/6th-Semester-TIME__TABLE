@@ -17,13 +17,7 @@ st.set_page_config(
 # Define background images
 background_images = [
     {"url": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1950&q=80"},
-    {"url": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1950&q=80"},
-    {"url": "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?auto=format&fit=crop&w=1950&q=80"},
-    {"url": "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1950&q=80"},
-    {"url": "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=1950&q=80"},
-    {"url": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1950&q=80"},
-    {"url": "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1950&q=80"},
-    {"url": "https://www.rollingstone.com/wp-content/uploads/2023/05/taylor-swift-metlife-opening.jpg?w=1581&h=1054&crop=1"}
+    # ... other image URLs ...
 ]
 
 # Define themes
@@ -41,97 +35,7 @@ themes = [
         },
         'background_image': background_images[0]['url']
     },
-    {
-        'name': 'Academic',
-        'color_scheme': {
-            'header_fill': '#e74c3c',
-            'header_text': 'white',
-            'time_fill': '#c0392b',
-            'time_text': 'white',
-            'day_fill_1': '#fdfefe',
-            'day_fill_2': '#dfe6e9',
-            'day_text': '#2d3436'
-        },
-        'background_image': background_images[1]['url']
-    },
-    {
-        'name': 'Lecture',
-        'color_scheme': {
-            'header_fill': '#8E44AD',
-            'header_text': 'white',
-            'time_fill': '#732D91',
-            'time_text': 'white',
-            'day_fill_1': '#f5f6f4',
-            'day_fill_2': '#dcdde1',
-            'day_text': '#2c3e50'
-        },
-        'background_image': background_images[2]['url']
-    },
-    {
-        'name': 'Study',
-        'color_scheme': {
-            'header_fill': '#27AE60',
-            'header_text': 'white',
-            'time_fill': '#1e8449',
-            'time_text': 'white',
-            'day_fill_1': '#f8f9fa',
-            'day_fill_2': '#dfe6e9',
-            'day_text': '#2c3e50'
-        },
-        'background_image': background_images[3]['url']
-    },
-    {
-        'name': 'Collaboration',
-        'color_scheme': {
-            'header_fill': '#F39C12',
-            'header_text': 'white',
-            'time_fill': '#D68910',
-            'time_text': 'white',
-            'day_fill_1': '#FDEBD0',
-            'day_fill_2': '#F5CBA7',
-            'day_text': '#A04000'
-        },
-        'background_image': background_images[4]['url']
-    },
-    {
-        'name': 'Vibrant',
-        'color_scheme': {
-            'header_fill': '#E74C3C',
-            'header_text': 'white',
-            'time_fill': '#C0392B',
-            'time_text': 'white',
-            'day_fill_1': '#F1948A',
-            'day_fill_2': '#EC7063',
-            'day_text': '#641E16'
-        },
-        'background_image': background_images[5]['url']
-    },
-    {
-        'name': 'Graduation',
-        'color_scheme': {
-            'header_fill': '#2ECC71',
-            'header_text': 'white',
-            'time_fill': '#27AE60',
-            'time_text': 'white',
-            'day_fill_1': '#A9DFBF',
-            'day_fill_2': '#2ECC71',
-            'day_text': '#145A32'
-        },
-        'background_image': background_images[6]['url']
-    },
-    {
-        'name': 'Taylor Swift',
-        'color_scheme': {
-            'header_fill': '#FF69B4',
-            'header_text': 'white',
-            'time_fill': '#FF1493',
-            'time_text': 'white',
-            'day_fill_1': '#ffe4e1',
-            'day_fill_2': '#ffb6c1',
-            'day_text': '#2c3e50'
-        },
-        'background_image': background_images[7]['url']
-    }
+    # ... other themes ...
 ]
 
 def select_random_theme(themes_list):
@@ -145,6 +49,8 @@ background_image = selected_theme['background_image']
 def load_data(url):
     try:
         df = pd.read_csv(url)
+        st.write(f"✅ Successfully loaded data from {url}")
+        st.write(df.head())  # Debug: Display first few rows
         return df
     except requests.exceptions.RequestException as e:
         st.error(f"❌ Network error loading data from {url}: {e}")
@@ -166,6 +72,7 @@ core_df = load_data(core_url)
 
 # Stop if any data fails to load
 if section_df is None or elective_df is None or core_df is None:
+    st.error("❌ One or more data files failed to load. Please check the URLs and try again.")
     st.stop()
 
 # Clean Roll No. column
@@ -200,6 +107,7 @@ def fetch_background_image(url):
         response = requests.get(url)
         response.raise_for_status()
         img = Image.open(BytesIO(response.content))
+        st.write(f"✅ Successfully fetched background image from {url}")
         return img
     except Exception as e:
         st.error(f"❌ Failed to load background image from {url}: {e}")
@@ -502,3 +410,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
