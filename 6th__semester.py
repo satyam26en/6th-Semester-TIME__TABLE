@@ -169,7 +169,11 @@ if section_df is None or elective_df is None or core_df is None:
     st.stop()
 
 # Clean Roll No. column
-section_df['Roll No.'] = section_df['Roll No.'].astype(str).str.strip()
+if 'Roll No.' in section_df.columns:
+    section_df['Roll No.'] = section_df['Roll No.'].astype(str).str.strip()
+else:
+    st.error("❌ 'Roll No.' column not found in section data.")
+    st.stop()
 
 # Define days and times
 days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -198,7 +202,7 @@ def fetch_background_image(url):
         img = Image.open(BytesIO(response.content))
         return img
     except Exception as e:
-        st.error(f"❌ Failed to load background image: {e}")
+        st.error(f"❌ Failed to load background image from {url}: {e}")
         return None
 
 def add_background_and_set_text_color(selected_background):
@@ -264,52 +268,110 @@ def add_background_and_set_text_color(selected_background):
 text_color = add_background_and_set_text_color(background_image)
 
 def standardize_time_slot(time_slot):
-    standardized_slot = ' '.join(time_slot.upper().split())
-    return standardized_slot  # Simplified as mapping is redundant
+    """
+    Standardizes various time slot formats to match the predefined 'times' list.
+    Example mappings:
+        '8-9' -> '8 TO 9'
+        '08:00-09:00' -> '8 TO 9'
+        '8 to 9' -> '8 TO 9'
+    """
+    time_slot = time_slot.upper().replace(':', '').replace('-', ' TO ').replace('TO', ' TO ').replace(' TO  ', ' TO ').strip()
+    match = re.match(r'(\d{1,2})\s*TO\s*(\d{1,2})', time_slot)
+    if match:
+        start, end = match.groups()
+        standardized_slot = f"{int(start)} TO {int(end)}"
+        return standardized_slot
+    return time_slot  # Return as is if it doesn't match expected patterns
 
 def generate_timetable_df(roll_number):
     student_section = section_df[section_df['Roll No.'] == roll_number]
     if student_section.empty:
         st.error("❌ Roll number not found. Please check and try again.")
         return None
+    
+    # Extract sections
     core_section = student_section['Core Section'].values[0]
     elective_1_section = student_section['Professional Elective 1'].values[0]
     elective_2_section = student_section['Professional Elective 2'].values[0]
+    
+    # Fetch timetables
     elective_1_timetable = elective_df[elective_df['Section(DE)'] == elective_1_section]
     elective_2_timetable = elective_df[elective_df['Section(DE)'] == elective_2_section]
     core_timetable = core_df[core_df['Section'] == core_section]
+    
+    # Initialize timetable matrix
     timetable_matrix = pd.DataFrame(index=times, columns=days, data='')
-
-    def fill_timetable(timetable_df):
-        room_columns = [col for col in timetable_df.columns if 'ROOM' in col]
+    
+    def fill_timetable(timetable_df, timetable_matrix):
+        if timetable_df.empty:
+            st.warning("⚠️ Timetable data is empty for the selected section.")
+            return
+        # Identify columns that contain 'ROOM' and 'TIME'
+        room_columns = sorted([col for col in timetable_df.columns if 'ROOM' in col], key=lambda x: int(re.findall(r'\d+', x)[0]))
+        time_columns = sorted([col for col in timetable_df.columns if 'TIME' in col], key=lambda x: int(re.findall(r'\d+', x)[0]))
+        
+        # Ensure that each ROOM has a corresponding TIME
+        if len(room_columns) != len(time_columns):
+            st.warning("⚠️ Mismatch between ROOM and TIME columns.")
+            return
+        
         for _, row in timetable_df.iterrows():
-            day = day_mapping.get(row['DAY'], 'Unknown')
+            day_abbr = row.get('DAY', '').upper()
+            day = day_mapping.get(day_abbr, 'Unknown')
             if day == 'Unknown':
+                st.warning(f"⚠️ Unrecognized day abbreviation: {day_abbr}")
                 continue
-            for col in room_columns:
-                room_number = row[col]
-                # Assuming corresponding time slot column exists
-                time_col = col.replace('ROOM', 'TIME')  # Adjust based on actual column names
-                if time_col not in timetable_df.columns:
+            for room_col, time_col in zip(room_columns, time_columns):
+                room_number = row.get(room_col, '').strip()
+                time_slot_raw = row.get(time_col, '').strip()
+                if not time_slot_raw:
+                    st.warning(f"⚠️ Missing time slot for {room_col}")
                     continue
-                time_slot = standardize_time_slot(row[time_col])
-                subject = row.get(time_col, 'N/A')
-                if isinstance(subject, str) and subject.lower() != 'x':
+                time_slot = standardize_time_slot(time_slot_raw)
+                if time_slot not in times:
+                    st.warning(f"⚠️ Time slot '{time_slot}' does not match predefined slots.")
+                    continue
+                subject = row.get(time_col, '').strip()
+                if isinstance(subject, str) and subject.lower() != 'x' and subject != '':
                     existing_entry = timetable_matrix.at[time_slot, day]
                     new_entry = f"{subject} ({room_number})"
-                    timetable_matrix.at[time_slot, day] = f"{existing_entry}<br>{new_entry}" if existing_entry else new_entry
-
-    fill_timetable(core_timetable)
-    fill_timetable(elective_1_timetable)
-    fill_timetable(elective_2_timetable)
+                    if existing_entry:
+                        timetable_matrix.at[time_slot, day] = f"{existing_entry}<br>{new_entry}"
+                    else:
+                        timetable_matrix.at[time_slot, day] = new_entry
+    
+    # Fill timetable with core and electives
+    fill_timetable(core_timetable, timetable_matrix)
+    fill_timetable(elective_1_timetable, timetable_matrix)
+    fill_timetable(elective_2_timetable, timetable_matrix)
+    
+    # Replace NaNs with empty strings and ensure correct order
     timetable_matrix = timetable_matrix.fillna('')
     timetable_matrix = timetable_matrix.reindex(times)
+    
     return timetable_matrix
 
 def visualize_timetable(timetable_matrix, color_scheme):
     if timetable_matrix is None:
         return None
     bold_time_slots = [f"<b>{time}</b>" for time in timetable_matrix.index]
+    # Prepare cell values
+    cell_values = [bold_time_slots] + [timetable_matrix[day].tolist() for day in days]
+    # Define fill colors
+    fill_colors = [
+        [color_scheme['time_fill']] * len(times)
+    ]
+    for i in range(len(days)):
+        fill = [color_scheme['day_fill_1']] * len(times) if i % 2 == 0 else [color_scheme['day_fill_2']] * len(times)
+        fill_colors.append(fill)
+    
+    # Define font colors
+    font_colors = [
+        color_scheme['time_text']
+    ]
+    for _ in days:
+        font_colors.append([color_scheme['day_text']] * len(times))
+    
     fig = go.Figure(data=[go.Table(
         columnwidth=[100] + [120]*6,
         header=dict(
@@ -320,23 +382,11 @@ def visualize_timetable(timetable_matrix, color_scheme):
             height=50
         ),
         cells=dict(
-            values=[bold_time_slots] + [timetable_matrix[day].tolist() for day in days],
-            fill=dict(
-                color=[
-                    [color_scheme['time_fill']] * len(times),
-                    *[
-                        [color_scheme['day_fill_1']] * len(times) if i % 2 == 0 else [color_scheme['day_fill_2']] * len(times)
-                        for i in range(len(days))
-                    ]
-                ]
-            ),
+            values=cell_values,
+            fill=dict(color=fill_colors),
             align='center',
             font=dict(
-                color=[
-                    color_scheme['time_text']
-                ] + [
-                    [color_scheme['day_text']] * len(times) for _ in days
-                ],
+                color=font_colors,
                 size=12,
                 family='Arial'
             ),
@@ -399,6 +449,10 @@ def main():
         unsafe_allow_html=True
     )
     
+    # Sidebar for Debugging
+    with st.sidebar:
+        show_debug = st.checkbox("🔍 Show Debug Information", value=False)
+    
     # Center the input and button using columns
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
@@ -420,10 +474,23 @@ def main():
                             if img_bytes:
                                 create_download_button(img_bytes)
                         st.markdown('</div>', unsafe_allow_html=True)
+                    else:
+                        st.error("❌ Failed to generate the timetable visualization.")
             else:
-                st.error("❌ Invalid roll number format. Please enter a valid roll number.")
+                st.error("❌ Invalid roll number format. Please enter a valid roll number (5-10 alphanumeric characters).")
         else:
             st.error("❌ Please enter a valid roll number.")
+    
+    # Conditional Debugging Information
+    if 'show_debug' in locals() and show_debug:
+        st.sidebar.markdown("### 🛠️ Debug Information")
+        st.sidebar.write("#### DataFrames:")
+        st.sidebar.write("**Section DataFrame:**")
+        st.sidebar.write(section_df.head())
+        st.sidebar.write("**Elective DataFrame:**")
+        st.sidebar.write(elective_df.head())
+        st.sidebar.write("**Core DataFrame:**")
+        st.sidebar.write(core_df.head())
     
     # Hide Streamlit footer
     hide_streamlit_style = """
