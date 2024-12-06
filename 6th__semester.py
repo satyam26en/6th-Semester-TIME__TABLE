@@ -156,8 +156,7 @@ def load_data(url):
 
 section_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/section_list_6Th_semester%20-%20Sheet1.csv'
 elective_url = 'https://raw.githubusercontent.com/satyam26en/TIME_TABLE_KIIT/main/Professional_Elective%20-%20Sheet1.csv'
-core_url = 'https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/6th_core%20-%20Sheet1.csv'
-
+core_url = "https://raw.githubusercontent.com/satyam26en/6th-Semester-TIME__TABLE/main/section_time_table%20-%20Sheet1.csv"
 section_df = load_data(section_url)
 elective_df = load_data(elective_url)
 core_df = load_data(core_url)
