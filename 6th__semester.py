@@ -7,6 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1kAt7vHvMvcGB08cP7WKcSs4X6INlxr9n
 """
 # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """6th_semester.py
 
 Streamlit application for viewing student timetables.
