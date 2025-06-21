@@ -1,4 +1,3 @@
-### README.md
 # 📚 Student Time Table Generator
 
 A comprehensive and user-friendly application that generates personalized class timetables for students based on their roll numbers. The project integrates core and elective course data to create visually appealing timetables that can be viewed, exported, and shared through a web interface.
@@ -20,12 +19,16 @@ A comprehensive and user-friendly application that generates personalized class 
 ## 📸 Screenshots
 
 ### Application Interface
-![Application Interface](screenshots/image1.png)
-*Main interface showing the roll number input and timetable generation*
+<div align="center">
+  <img src="image_1.png" alt="Application Interface" width="800"/>
+  <p><em>Main interface showing the roll number input and timetable generation</em></p>
+</div>
 
 ### Generated Timetable
-![Generated Timetable](screenshots/image2.png)
-*Example of a generated student timetable with core and elective subjects*
+<div align="center">
+  <img src="Image_2.png" alt="Generated Timetable" width="800"/>
+  <p><em>Example of a generated student timetable with core and elective subjects</em></p>
+</div>
 
 ## 🛠️ Technologies Used
 
