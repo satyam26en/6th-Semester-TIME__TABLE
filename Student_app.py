@@ -9,7 +9,17 @@ Original file is located at
 
 import streamlit as st
 import pandas as pd
-import plotly.graph_objects as go
+
+# Add error handling for plotly import
+try:
+    import plotly.graph_objects as go
+    PLOTLY_AVAILABLE = True
+except ImportError as e:
+    PLOTLY_AVAILABLE = False
+    st.error(f"❌ Plotly is not installed: {e}")
+    st.info("Please ensure 'plotly>=5.15.0' is in your requirements.txt file")
+    st.stop()
+
 import random
 from io import BytesIO
 from PIL import Image
