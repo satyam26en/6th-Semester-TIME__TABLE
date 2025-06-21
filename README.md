@@ -113,9 +113,9 @@ Student__Time__Table/
 ### SECTION.csv
 Maps student roll numbers to their respective sections:
 ```csv
-Roll_Number,Core_Section,Elective_Section
-12345,A1,E1
-12346,A2,E2
+Roll_Number,Core_Section
+12345,A1
+12346,A2
 ```
 
 ### Core and Elective Timetable Files
@@ -165,20 +165,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Thanks to the open-source community for the amazing libraries
 - Inspired by the need for efficient student schedule management
 - Special thanks to contributors and users providing feedback
-
-## 📞 Support
-
-If you encounter any issues or have questions:
-
-1. Check the [Issues](https://github.com/satyam26en/Student__Time__Table/issues) page
-2. Create a new issue if your problem isn't already addressed
-3. Provide detailed information about your environment and the issue
-
-## 🔄 Version History
-
-- **v1.0.0** - Initial release with core functionality
-- **v1.1.0** - Added Streamlit web interface
-- **v1.2.0** - Implemented cloud deployment and export features
 
 ---
 
